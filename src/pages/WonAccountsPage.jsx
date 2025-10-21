@@ -400,8 +400,8 @@ const WonAccountsPage = ({ onBack, userRole }) => {
         </header>
 
         {/* Navigation Tabs */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-          <div className="flex space-x-1">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             {[
               "overview",
               "monthly",
@@ -412,7 +412,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition ${
+                className={`flex-1 min-w-[140px] py-2 px-4 text-sm font-medium rounded-md transition ${
                   activeTab === tab
                     ? "bg-red-600 text-white shadow"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
