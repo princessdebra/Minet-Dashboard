@@ -141,6 +141,40 @@ const LostAccountsPage = ({ onBack, userRole }) => {
 
   const itemsPerPage = 10;
 
+  const buildGrowthMeta = (growthValue) => {
+    if (typeof growthValue !== "number" || Number.isNaN(growthValue)) {
+      return {
+        valueLabel: "N/A",
+        icon: "–",
+        valueColor: "text-gray-500",
+        trendColor: "text-gray-400",
+        description: "No prior-year data",
+        raw: null,
+      };
+    }
+
+    if (Math.abs(growthValue) < 1e-6) {
+      return {
+        valueLabel: formatPercentage(0),
+        icon: "–",
+        valueColor: "text-gray-600",
+        trendColor: "text-gray-500",
+        description: "No change from last year",
+        raw: 0,
+      };
+    }
+
+    const isIncrease = growthValue >= 0;
+    return {
+      valueLabel: formatPercentage(Math.abs(growthValue)),
+      icon: isIncrease ? "▲" : "▼",
+      valueColor: isIncrease ? "text-red-600" : "text-green-600",
+      trendColor: isIncrease ? "text-red-500" : "text-green-500",
+      description: `${isIncrease ? "Increase" : "Decrease"} from last year`,
+      raw: growthValue,
+    };
+  };
+
   // Check if user is admin
   const isAdmin = userRole === "admin";
 
@@ -306,11 +340,17 @@ const LostAccountsPage = ({ onBack, userRole }) => {
   const processEnhancedData = () => {
     if (!data || !data.rawData) return null;
 
-    // Apply time frame filter to raw data
-    const filteredRawData = filterDataByTimeFrame(data.rawData, timeFrame);
+    const allRawData = Array.isArray(data.rawData) ? data.rawData : [];
 
-    const currentYear = "2025";
-    const previousYear = "2024";
+    // Apply time frame filter to raw data for timeframe-aware widgets
+    const filteredRawData = filterDataByTimeFrame(allRawData, timeFrame);
+
+    const now = new Date();
+    const currentYear = String(now.getFullYear());
+    const previousYear = String(now.getFullYear() - 1);
+
+    const sumAmounts = (items) =>
+      items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
 
     // Filter data by years from the time-frame filtered data
     const currentYearData = filteredRawData.filter(
@@ -365,14 +405,8 @@ const LostAccountsPage = ({ onBack, userRole }) => {
       const currentAccounts = currentYearMonthData.length;
       const previousAccounts = previousYearMonthData.length;
 
-      const currentRevenue = currentYearMonthData.reduce(
-        (sum, item) => sum + (parseFloat(item.amount) || 0),
-        0
-      );
-      const previousRevenue = previousYearMonthData.reduce(
-        (sum, item) => sum + (parseFloat(item.amount) || 0),
-        0
-      );
+      const currentRevenue = sumAmounts(currentYearMonthData);
+      const previousRevenue = sumAmounts(previousYearMonthData);
 
       const accountGrowth =
         previousAccounts > 0
@@ -422,41 +456,58 @@ const LostAccountsPage = ({ onBack, userRole }) => {
       divisionDataCurrentYear
     ).sort((a, b) => b.accounts - a.accounts);
 
-    // Year-over-Year Comparison (based on filtered data)
-    const yoyComparison = {
-      currentYear: {
-        accounts: currentYearData.length,
-        revenue: currentYearData.reduce(
-          (sum, item) => sum + (parseFloat(item.amount) || 0),
-          0
-        ),
-      },
-      lastYear: {
-        accounts: previousYearData.length,
-        revenue: previousYearData.reduce(
-          (sum, item) => sum + (parseFloat(item.amount) || 0),
-          0
-        ),
-      },
+    // Year-over-Year Comparison uses the full dataset for accurate counts
+    const yoyCurrentYearData = allRawData.filter(
+      (item) => item.year === currentYear
+    );
+    const yoyPreviousYearData = allRawData.filter(
+      (item) => item.year === previousYear
+    );
+
+    const yoyCurrentRevenue = sumAmounts(yoyCurrentYearData);
+    const yoyPreviousRevenue = sumAmounts(yoyPreviousYearData);
+
+    const calculateGrowth = (currentValue, previousValue) => {
+      if (previousValue === 0) {
+        return currentValue === 0 ? 0 : null;
+      }
+      return (currentValue - previousValue) / previousValue;
     };
 
-    // Calculate growth percentages
-    yoyComparison.accountsGrowth =
-      yoyComparison.lastYear.accounts > 0
-        ? (yoyComparison.currentYear.accounts -
-            yoyComparison.lastYear.accounts) /
-          yoyComparison.lastYear.accounts
-        : yoyComparison.currentYear.accounts > 0
-          ? 1
-          : 0;
+    const currentAverage =
+      yoyCurrentYearData.length > 0
+        ? yoyCurrentRevenue / yoyCurrentYearData.length
+        : null;
+    const previousAverage =
+      yoyPreviousYearData.length > 0
+        ? yoyPreviousRevenue / yoyPreviousYearData.length
+        : null;
 
-    yoyComparison.revenueGrowth =
-      yoyComparison.lastYear.revenue > 0
-        ? (yoyComparison.currentYear.revenue - yoyComparison.lastYear.revenue) /
-          yoyComparison.lastYear.revenue
-        : yoyComparison.currentYear.revenue > 0
-          ? 1
-          : 0;
+    const yoyComparison = {
+      currentYear: {
+        label: currentYear,
+        accounts: yoyCurrentYearData.length,
+        revenue: yoyCurrentRevenue,
+      },
+      lastYear: {
+        label: previousYear,
+        accounts: yoyPreviousYearData.length,
+        revenue: yoyPreviousRevenue,
+      },
+      accountsGrowth: calculateGrowth(
+        yoyCurrentYearData.length,
+        yoyPreviousYearData.length
+      ),
+      revenueGrowth: calculateGrowth(yoyCurrentRevenue, yoyPreviousRevenue),
+      averageAccountValue: {
+        current: currentAverage,
+        last: previousAverage,
+        growth:
+          previousAverage && previousAverage !== 0 && currentAverage !== null
+            ? (currentAverage - previousAverage) / previousAverage
+            : null,
+      },
+    };
 
     return {
       monthlyAnalysis: monthlyArrayCurrentYear,
@@ -465,10 +516,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
       yoyComparison,
       // Update totals based on filtered data
       totalLostAccounts: currentYearData.length,
-      totalLostRevenue: currentYearData.reduce(
-        (sum, item) => sum + (parseFloat(item.amount) || 0),
-        0
-      ),
+      totalLostRevenue: sumAmounts(currentYearData),
       retentionRate: data.retentionRate, // This might need adjustment based on your business logic
       lostByReason: data.lostByReason, // These might need filtering too
       lostByCompetitor: data.lostByCompetitor,
@@ -548,6 +596,18 @@ const LostAccountsPage = ({ onBack, userRole }) => {
     lostByCompetitor,
     rawData,
   } = data;
+
+  const yoyComparisonData = enhancedData?.yoyComparison;
+  const yoyAccountsMeta = buildGrowthMeta(yoyComparisonData?.accountsGrowth);
+  const yoyRevenueMeta = buildGrowthMeta(yoyComparisonData?.revenueGrowth);
+  const averageAccountValue = yoyComparisonData?.averageAccountValue;
+  const averageValueMeta = buildGrowthMeta(averageAccountValue?.growth ?? null);
+  const currentYoYLabel = yoyComparisonData?.currentYear?.label;
+  const previousYoYLabel = yoyComparisonData?.lastYear?.label;
+  const comparisonTitle =
+    currentYoYLabel && previousYoYLabel
+      ? `Year on Year Comparison (${previousYoYLabel} vs ${currentYoYLabel})`
+      : "Year on Year Comparison";
 
   // Sort and filter data
   const sortedCompetitors = [...(lostByCompetitor || [])]
@@ -772,33 +832,16 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                   <TrendingUp size={24} className="text-blue-400" />
                 </div>
                 <p
-                  className={`text-3xl font-bold ${
-                    enhancedData?.yoyComparison?.accountsGrowth >= 0
-                      ? "text-red-600"
-                      : "text-green-600"
-                  }`}
+                  className={`text-3xl font-bold ${yoyAccountsMeta.valueColor}`}
                 >
-                  {formatPercentage(
-                    Math.abs(enhancedData?.yoyComparison?.accountsGrowth || 0)
-                  )}
+                  {yoyAccountsMeta.valueLabel}
                 </p>
                 <div className="mt-2 flex items-center text-sm">
-                  <span
-                    className={`mr-2 ${
-                      enhancedData?.yoyComparison?.accountsGrowth >= 0
-                        ? "text-red-500"
-                        : "text-green-500"
-                    }`}
-                  >
-                    {enhancedData?.yoyComparison?.accountsGrowth >= 0
-                      ? "▲"
-                      : "▼"}
+                  <span className={`mr-2 ${yoyAccountsMeta.trendColor}`}>
+                    {yoyAccountsMeta.icon}
                   </span>
                   <span className="text-gray-500">
-                    {enhancedData?.yoyComparison?.accountsGrowth >= 0
-                      ? "Increase"
-                      : "Decrease"}{" "}
-                    from last year
+                    {yoyAccountsMeta.description}
                   </span>
                 </div>
               </div>
@@ -1087,7 +1130,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-bold text-gray-800">
-                    Year on Year Comparison (2024 vs 2025)
+                    {comparisonTitle}
                   </h2>
                   <TrendingUp className="text-gray-400" />
                 </div>
@@ -1330,10 +1373,12 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center p-6 bg-red-50 rounded-lg border border-red-100">
                       <p className="text-sm text-gray-600 mb-2">
-                        2025 Accounts
+                        {currentYoYLabel
+                          ? `${currentYoYLabel} Accounts`
+                          : "Current Year Accounts"}
                       </p>
                       <p className="text-3xl font-bold text-red-600">
-                        {enhancedData.yoyComparison.currentYear.accounts}
+                        {enhancedData.yoyComparison.currentYear.accounts.toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
                         {formatCurrency(
@@ -1343,10 +1388,12 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                     </div>
                     <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-100">
                       <p className="text-sm text-gray-600 mb-2">
-                        2024 Accounts
+                        {previousYoYLabel
+                          ? `${previousYoYLabel} Accounts`
+                          : "Previous Year Accounts"}
                       </p>
                       <p className="text-3xl font-bold text-blue-600">
-                        {enhancedData.yoyComparison.lastYear.accounts}
+                        {enhancedData.yoyComparison.lastYear.accounts.toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
                         {formatCurrency(
@@ -1356,37 +1403,30 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                     </div>
                     <div
                       className={`text-center p-6 rounded-lg border ${
-                        enhancedData.yoyComparison.accountsGrowth >= 0
-                          ? "bg-red-50 border-red-100"
-                          : "bg-green-50 border-green-100"
+                        typeof yoyAccountsMeta.raw === "number"
+                          ? yoyAccountsMeta.raw > 0
+                            ? "bg-red-50 border-red-100"
+                            : yoyAccountsMeta.raw < 0
+                              ? "bg-green-50 border-green-100"
+                              : "bg-gray-50 border-gray-200"
+                          : "bg-gray-50 border-gray-200"
                       }`}
                     >
                       <p className="text-sm text-gray-600 mb-2">YoY Change</p>
                       <p
-                        className={`text-3xl font-bold ${
-                          enhancedData.yoyComparison.accountsGrowth >= 0
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }`}
+                        className={`text-3xl font-bold ${yoyAccountsMeta.valueColor}`}
                       >
-                        {formatPercentage(
-                          Math.abs(enhancedData.yoyComparison.accountsGrowth)
-                        )}
-                        {enhancedData.yoyComparison.accountsGrowth >= 0
-                          ? " ▲"
-                          : " ▼"}
+                        {yoyAccountsMeta.valueLabel}
+                        {yoyAccountsMeta.raw !== null
+                          ? ` ${yoyAccountsMeta.icon}`
+                          : ""}
                       </p>
                       <p
-                        className={`text-sm mt-2 ${
-                          enhancedData.yoyComparison.accountsGrowth >= 0
-                            ? "text-red-500"
-                            : "text-green-500"
-                        }`}
+                        className={`text-sm mt-2 ${yoyAccountsMeta.trendColor}`}
                       >
-                        {enhancedData.yoyComparison.accountsGrowth >= 0
-                          ? "Increase"
-                          : "Decrease"}{" "}
-                        from 2024
+                        {yoyAccountsMeta.raw !== null
+                          ? `${yoyAccountsMeta.raw >= 0 ? "Increase" : "Decrease"} from ${previousYoYLabel || "prior year"}`
+                          : "No prior-year data"}
                       </p>
                     </div>
                   </div>
@@ -1398,32 +1438,25 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                         Revenue YoY Change
                       </p>
                       <p
-                        className={`text-xl font-bold ${
-                          enhancedData.yoyComparison.revenueGrowth >= 0
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }`}
+                        className={`text-xl font-bold ${yoyRevenueMeta.valueColor}`}
                       >
-                        {formatPercentage(
-                          Math.abs(enhancedData.yoyComparison.revenueGrowth)
-                        )}
-                        {enhancedData.yoyComparison.revenueGrowth >= 0
-                          ? " ▲"
-                          : " ▼"}
+                        {yoyRevenueMeta.valueLabel}
+                        {yoyRevenueMeta.raw !== null
+                          ? ` ${yoyRevenueMeta.icon}`
+                          : ""}
                       </p>
                     </div>
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-600 mb-2">
                         Average Account Value Change
                       </p>
-                      <p className="text-xl font-bold text-gray-700">
-                        {formatPercentage(
-                          enhancedData.yoyComparison.currentYear.revenue /
-                            enhancedData.yoyComparison.currentYear.accounts /
-                            (enhancedData.yoyComparison.lastYear.revenue /
-                              enhancedData.yoyComparison.lastYear.accounts) -
-                            1
-                        )}
+                      <p
+                        className={`text-xl font-bold ${averageValueMeta.valueColor}`}
+                      >
+                        {averageValueMeta.valueLabel}
+                        {averageValueMeta.raw !== null
+                          ? ` ${averageValueMeta.icon}`
+                          : ""}
                       </p>
                     </div>
                   </div>
