@@ -118,7 +118,7 @@ const RevenueWalkPage = ({ onBack }) => {
 
       // Also fetch summary data with month parameter
       const summaryResponse = await fetch(
-        API_URL + `/api/revenue-walk/summary?month=${monthParam}`
+        API_URL + "/api/revenue-walk/summary"
       );
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();
