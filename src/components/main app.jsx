@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import DashboardLanding from "../pages/DashboardLanding";
 import WonAccountsPage from "../pages/WonAccountsPage";
 import LostAccountsPage from "../pages/LostAccountsPage";
@@ -10,37 +10,35 @@ import ForgotPasswordScreen from "../pages/ForgotPasswordScreen";
 import AdminUsersPage from "../pages/AdminUsersPage";
 import { API_URL } from "../constants";
 
+const getStoredUser = () => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) return null;
+
+    const parsedUser = JSON.parse(storedUser);
+    return parsedUser && typeof parsedUser === "object" ? parsedUser : null;
+  } catch (error) {
+    console.error("Error reading stored user data:", error);
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
 // Main App Component
 const App = () => {
+  const initialUser = useMemo(() => getStoredUser(), []);
+
+  const [currentUser, setCurrentUser] = useState(initialUser);
   const [currentScreen, setCurrentScreen] = useState("login");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => initialUser !== null
+  );
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // Check for existing session on component mount
-  useEffect(() => {
-    const checkSession = () => {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          if (userData) {
-            setIsAuthenticated(true);
-            setCurrentUser(userData);
-            setCurrentPage("dashboard");
-          }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          localStorage.removeItem("user");
-        }
-      }
-    };
-
-    checkSession();
-  }, []);
 
   const handleLogin = (userData) => {
     setIsAuthenticated(true);

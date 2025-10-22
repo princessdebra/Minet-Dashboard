@@ -67,6 +67,7 @@ const RevenueWalkPage = ({ onBack }) => {
   const [timeframe, setTimeframe] = useState("2025");
   const [summaryView, setSummaryView] = useState("grand-total");
   const [activeTab, setActiveTab] = useState("current-analysis");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     fetchRevenueData();
@@ -94,6 +95,70 @@ const RevenueWalkPage = ({ onBack }) => {
     } catch (e) {
       setError(e.message);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch(
+        API_URL + `/api/download-revenue-walk-template?year=${selectedYear}`
+      );
+      if (!response.ok) throw new Error("Failed to download template");
+
+      const result = await response.json();
+
+      const blob = new Blob([result.csv_content], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `revenue_walk_${selectedYear}_template.csv`
+      );
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert(`Error downloading template: ${err.message}`);
+    }
+  };
+
+  const handleUploadCSV = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("csv_file", file);
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(API_URL + "/api/upload-revenue-walk", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Server error");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert("Revenue walk data updated successfully!");
+        fetchRevenueData();
+      } else {
+        throw new Error(result.message || "Failed to upload file.");
+      }
+    } catch (err) {
+      setError(err.message);
+      alert(`Error: ${err.message}`);
       setLoading(false);
     }
   };
@@ -256,28 +321,83 @@ const RevenueWalkPage = ({ onBack }) => {
             >
               <ArrowLeft size={20} className="mr-2" /> Back to Dashboard
             </button>
-            <div className="flex items-center gap-2">
-              <div
-                className="text-sm flex items-center px-3 py-1 rounded-full"
-                style={{ backgroundColor: "#E2E8F0", color: COLORS.textLight }}
-              >
-                <Calendar size={16} className="mr-1" />
-                Jan-Sept {timeframe}
+            <div className="flex flex-col md:flex-row md:items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
+                <div
+                  className="text-sm flex items-center px-3 py-1 rounded-full"
+                  style={{
+                    backgroundColor: "#E2E8F0",
+                    color: COLORS.textLight,
+                  }}
+                >
+                  <Calendar size={16} className="mr-1" />
+                  Jan-Sept {timeframe}
+                </div>
+                <button
+                  onClick={fetchRevenueData}
+                  className="p-2 rounded-full border transition-colors"
+                  style={{
+                    backgroundColor: COLORS.card,
+                    borderColor: "#E2E8F0",
+                  }}
+                  title="Refresh data"
+                >
+                  <RefreshCw size={18} style={{ color: COLORS.primary }} />
+                </button>
+                <button
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                  style={{ backgroundColor: COLORS.primary }}
+                >
+                  <Download size={18} /> Export Report
+                </button>
               </div>
-              <button
-                onClick={fetchRevenueData}
-                className="p-2 rounded-full border transition-colors"
-                style={{ backgroundColor: COLORS.card, borderColor: "#E2E8F0" }}
-                title="Refresh data"
-              >
-                <RefreshCw size={18} style={{ color: COLORS.primary }} />
-              </button>
-              <button
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                style={{ backgroundColor: COLORS.primary }}
-              >
-                <Download size={18} /> Export Report
-              </button>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-800 mb-3">
+                  Revenue Walk Data
+                </h3>
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Select Year for Template
+                  </label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) =>
+                      setSelectedYear(parseInt(e.target.value, 10))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                  >
+                    {Array.from({ length: 3 }, (_, i) => {
+                      const year = new Date().getFullYear() + i;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
+                  >
+                    <Download size={16} /> Download {selectedYear} Template
+                  </button>
+                  <label
+                    htmlFor="revenue-walk-upload"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
+                  >
+                    <Shield size={16} /> Upload CSV
+                  </label>
+                  <input
+                    id="revenue-walk-upload"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleUploadCSV}
+                    className="hidden"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
