@@ -559,7 +559,7 @@ const RevenueWalkPage = ({ onBack }) => {
                         className="text-sm font-medium mb-1"
                         style={{ color: COLORS.textLight }}
                       >
-                        MKIC
+                        MKC
                       </div>
                       <div
                         className="text-2xl font-bold"
