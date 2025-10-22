@@ -861,12 +861,14 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                         width={140}
                       />
                       <Tooltip
-                        formatter={(value, name) => [
-                          name === "amountWon"
-                            ? formatCurrency(value)
-                            : `${value} accounts`,
-                          name === "amountWon" ? "Amount Won" : "Accounts Won",
-                        ]}
+                        formatter={(value, name) => {
+                          // name is the display name from the Bar component
+                          if (name === "Amount Won") {
+                            return [formatCurrency(value), "Amount Won"];
+                          } else {
+                            return [`${value} accounts`, "Accounts Won"];
+                          }
+                        }}
                         contentStyle={{
                           background: "rgba(255, 255, 255, 0.96)",
                           border: "1px solid #e5e7eb",
