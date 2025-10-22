@@ -60,7 +60,31 @@ const formatPercentage = (value) => {
   return `${(value * 100).toFixed(1)}%`;
 };
 
+// Month names for the filter
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 const RevenueWalkPage = ({ onBack }) => {
+  // Helper function to get default month (current month - 1, since updates happen at month end)
+  const getDefaultMonth = () => {
+    const currentMonth = new Date().getMonth(); // 0-11 (0=January, 11=December)
+    // If current month is January, default to December of previous year
+    // Otherwise, default to previous month
+    return currentMonth === 0 ? 11 : currentMonth - 1;
+  };
+
   const [revenueData, setRevenueData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -68,6 +92,12 @@ const RevenueWalkPage = ({ onBack }) => {
   const [summaryView, setSummaryView] = useState("grand-total");
   const [activeTab, setActiveTab] = useState("current-analysis");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(getDefaultMonth());
+
+  // Get short month name (e.g., "Sept" for September)
+  const getShortMonthName = (monthIndex) => {
+    return MONTH_NAMES[monthIndex].substring(0, 4);
+  };
 
   useEffect(() => {
     fetchRevenueData();
@@ -676,31 +706,58 @@ const RevenueWalkPage = ({ onBack }) => {
                     >
                       Division Performance
                     </h3>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setTimeframe("2025")}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          timeframe === "2025" ? "text-white" : "text-gray-600"
-                        }`}
-                        style={{
-                          backgroundColor:
-                            timeframe === "2025" ? COLORS.primary : "#F1F5F9",
-                        }}
-                      >
-                        2025
-                      </button>
-                      <button
-                        onClick={() => setTimeframe("2024")}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          timeframe === "2024" ? "text-white" : "text-gray-600"
-                        }`}
-                        style={{
-                          backgroundColor:
-                            timeframe === "2024" ? COLORS.primary : "#F1F5F9",
-                        }}
-                      >
-                        2024
-                      </button>
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {/* Month Selector */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-600">
+                          Month:
+                        </span>
+                        <select
+                          value={selectedMonth}
+                          onChange={(e) =>
+                            setSelectedMonth(parseInt(e.target.value))
+                          }
+                          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+                        >
+                          {MONTH_NAMES.map((month, index) => (
+                            <option key={index} value={index}>
+                              {month}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Year Filter Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setTimeframe("2025")}
+                          className={`px-4 py-2 rounded-lg transition-colors ${
+                            timeframe === "2025"
+                              ? "text-white"
+                              : "text-gray-600"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              timeframe === "2025" ? COLORS.primary : "#F1F5F9",
+                          }}
+                        >
+                          2025
+                        </button>
+                        <button
+                          onClick={() => setTimeframe("2024")}
+                          className={`px-4 py-2 rounded-lg transition-colors ${
+                            timeframe === "2024"
+                              ? "text-white"
+                              : "text-gray-600"
+                          }`}
+                          style={{
+                            backgroundColor:
+                              timeframe === "2024" ? COLORS.primary : "#F1F5F9",
+                          }}
+                        >
+                          2024
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -719,13 +776,13 @@ const RevenueWalkPage = ({ onBack }) => {
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
                           >
-                            Sept 2025
+                            {getShortMonthName(selectedMonth)} 2025
                           </th>
                           <th
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
                           >
-                            Sept 2024
+                            {getShortMonthName(selectedMonth)} 2024
                           </th>
                           <th
                             className="text-right p-4 font-semibold"
@@ -803,13 +860,13 @@ const RevenueWalkPage = ({ onBack }) => {
                       <Legend />
                       <Bar
                         dataKey="newBusiness2025"
-                        name="Sept 2025"
+                        name={`${getShortMonthName(selectedMonth)} 2025`}
                         fill={COLORS.success}
                         radius={[4, 4, 0, 0]}
                       />
                       <Bar
                         dataKey="newBusiness2024"
-                        name="Sept 2024"
+                        name={`${getShortMonthName(selectedMonth)} 2024`}
                         fill={COLORS.secondary}
                         radius={[4, 4, 0, 0]}
                       />
@@ -859,13 +916,13 @@ const RevenueWalkPage = ({ onBack }) => {
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
                           >
-                            Sept 2025
+                            {getShortMonthName(selectedMonth)} 2025
                           </th>
                           <th
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
                           >
-                            Sept 2024
+                            {getShortMonthName(selectedMonth)} 2024
                           </th>
                           <th
                             className="text-right p-4 font-semibold"
@@ -943,13 +1000,13 @@ const RevenueWalkPage = ({ onBack }) => {
                       <Legend />
                       <Bar
                         dataKey="lostBusiness2025"
-                        name="Sept 2025"
+                        name={`${getShortMonthName(selectedMonth)} 2025`}
                         fill={COLORS.error}
                         radius={[4, 4, 0, 0]}
                       />
                       <Bar
                         dataKey="lostBusiness2024"
-                        name="Sept 2024"
+                        name={`${getShortMonthName(selectedMonth)} 2024`}
                         fill={COLORS.warning}
                         radius={[4, 4, 0, 0]}
                       />
