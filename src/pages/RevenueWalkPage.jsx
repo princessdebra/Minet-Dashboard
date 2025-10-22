@@ -101,20 +101,24 @@ const RevenueWalkPage = ({ onBack }) => {
 
   useEffect(() => {
     fetchRevenueData();
-  }, []);
+  }, [selectedMonth]); // Re-fetch data when selected month changes
 
   const fetchRevenueData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API_URL + "/api/revenue-walk/new-structure");
+      // Pass month parameter to API (selectedMonth is 0-11, API expects 1-12)
+      const monthParam = selectedMonth + 1;
+      const response = await fetch(
+        API_URL + `/api/revenue-walk/new-structure?month=${monthParam}`
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
 
-      // Also fetch summary data
+      // Also fetch summary data with month parameter
       const summaryResponse = await fetch(
-        API_URL + "/api/revenue-walk/summary"
+        API_URL + `/api/revenue-walk/summary?month=${monthParam}`
       );
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();
@@ -361,7 +365,7 @@ const RevenueWalkPage = ({ onBack }) => {
                   }}
                 >
                   <Calendar size={16} className="mr-1" />
-                  Jan-Sept {timeframe}
+                  Jan-{MONTH_NAMES[selectedMonth].substring(0, 4)} {timeframe}
                 </div>
                 <button
                   onClick={fetchRevenueData}
@@ -650,7 +654,7 @@ const RevenueWalkPage = ({ onBack }) => {
                         className="text-sm font-medium mb-1"
                         style={{ color: COLORS.textLight }}
                       >
-                        MKIC
+                        MKC
                       </div>
                       <div
                         className="text-2xl font-bold"
