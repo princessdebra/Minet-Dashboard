@@ -89,17 +89,19 @@ const MarketSharePage = ({ onBack, userRole }) => {
   // Function to handle CSV file download
   const handleDownloadCSV = () => {
     const columns = [
+      "term",
       "category",
-      "industry_gross_premium_q4_2024",
-      "industry_gross_premium_q4_2023",
-      "percent_change_2023_2022",
-      "minet_brokered_premiums_q4_2024",
-      "percent_change_2024_2023",
-      "minet_market_share_q4_2023",
-      "minet_market_share_q4_2022",
-      "percent_change_market_share_2024_2023",
-      "minet_brokered_premiums_q4_2022",
-      "minet_market_share_q4_2022_col2",
+      "industry_gross_premium_current_year",
+      "industry_gross_premium_previous_year",
+      "percent_change_current_previous",
+      "minet_brokered_premiums_current_year",
+      "minet_brokered_premiums_previous_year",
+      "percent_change_current_previous_premiums",
+      "minet_market_share_current_year",
+      "minet_market_share_previous_year",
+      "percent_change_current_previous_market_share",
+      "quarter",
+      "year",
     ];
     const csvContent = "data:text/csv;charset=utf-8," + columns.join(",");
     const encodedUri = encodeURI(csvContent);
