@@ -18,11 +18,8 @@ import {
   TrendingDown,
   Target,
   Award,
-  Percent,
   Globe,
-  Leaf,
   Briefcase,
-  ChevronDown,
   RefreshCw,
   Upload,
   Download,
@@ -65,7 +62,6 @@ const MarketSharePage = ({ onBack, userRole }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("product");
-  const [expandedInsight, setExpandedInsight] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [selectedTerm, setSelectedTerm] = useState("SHORT TERM INSURANCE"); // New filter state
@@ -171,13 +167,6 @@ const MarketSharePage = ({ onBack, userRole }) => {
         growthByProductLine: [],
         topCategories: [],
         premiumsData: [],
-        insights: {
-          overallMarketTrends: "No data available for selected term",
-          topPerforming: "N/A",
-          fastestGrowing: "N/A",
-          clientConcentration: 0,
-          claimsRatioImpact: "No data available",
-        },
       };
     }
 
@@ -215,27 +204,11 @@ const MarketSharePage = ({ onBack, userRole }) => {
       minet: item.minet_brokered_premiums_current_year,
     }));
 
-    // Insights
-    const insights = {
-      overallMarketTrends:
-        "Market is growing at 7.3% YoY with strongest growth in Medical (15.1%)",
-      topPerforming:
-        marketShareByProductLine.reduce(
-          (max, item) => (item.value > max.value ? item : max),
-          marketShareByProductLine[0]
-        )?.name || "N/A",
-      fastestGrowing: growthByProductLine[0]?.category || "N/A",
-      clientConcentration: 0.32, // Example value
-      claimsRatioImpact:
-        "Positive claims experience in Liability and Medical sectors",
-    };
-
     return {
       marketShareByProductLine,
       growthByProductLine,
       topCategories,
       premiumsData,
-      insights,
     };
   };
 
@@ -734,470 +707,546 @@ const MarketSharePage = ({ onBack, userRole }) => {
           </div>
         </div>
 
-        {/* Chart Navigation */}
-        <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setActiveTab("product")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "product"
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              By Product Line
-            </button>
-            <button
-              onClick={() => setActiveTab("growth")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "growth"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Growth Trends
-            </button>
-            <button
-              onClick={() => setActiveTab("premiums")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "premiums"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Premiums Analysis
-            </button>
-            <button
-              onClick={() => setActiveTab("top")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "top"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              Top Categories
-            </button>
-          </div>
-        </div>
-
-        {/* Main Chart Area */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-          {activeTab === "product" && (
-            <>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Market Share by Product Line - {getTermDisplayName()} (Q2 2025)
-              </h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData?.marketShareByProductLine}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      dataKey="value"
-                      nameKey="name"
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(1)}%`
-                      }
-                    >
-                      {chartData?.marketShareByProductLine?.map(
-                        (entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        )
-                      )}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value) => [`${value}%`, "Market Share"]}
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <Legend
-                      layout="vertical"
-                      verticalAlign="middle"
-                      align="right"
-                      wrapperStyle={{
-                        paddingLeft: "20px",
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Distribution across different insurance product categories
-              </p>
-            </>
-          )}
-
-          {activeTab === "growth" && (
-            <>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                YoY Growth by Product Line - {getTermDisplayName()} (Q2 2025)
-              </h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData?.growthByProductLine}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                    layout="vertical"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      type="number"
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <YAxis
-                      dataKey="category"
-                      type="category"
-                      width={120}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip
-                      formatter={(value) => [`${value}%`, "Growth"]}
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <Legend />
-                    <Bar
-                      dataKey="growth"
-                      name="YoY Growth"
-                      fill="#10b981"
-                      radius={[0, 4, 4, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Year-over-year growth rates across product categories
-              </p>
-            </>
-          )}
-
-          {activeTab === "premiums" && (
-            <>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Industry vs. Minet Premiums - {getTermDisplayName()} (Q2 2025)
-              </h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData?.premiumsData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="category"
-                      angle={-45}
-                      textAnchor="end"
-                      height={70}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis
-                      tickFormatter={(value) => formatCurrency(value)}
-                      width={100}
-                    />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        formatCurrency(value),
-                        name === "industry" ? "Industry" : "Minet",
-                      ]}
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <Legend />
-                    <Bar
-                      dataKey="industry"
-                      name="Industry Premiums"
-                      fill="#6366f1"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="minet"
-                      name="Minet Premiums"
-                      fill="#06b6d4"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Comparison between total industry premiums and Minet's brokered
-                premiums
-              </p>
-            </>
-          )}
-
-          {activeTab === "top" && (
-            <>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Top 5 Categories by Market Share - {getTermDisplayName()} (Q2
-                2025)
-              </h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={chartData?.topCategories}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="category"
-                      angle={-45}
-                      textAnchor="end"
-                      height={70}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tickFormatter={(value) => `${value}%`} width={40} />
-                    <Tooltip
-                      formatter={(value) => [`${value}%`, "Market Share"]}
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <Legend />
-                    <Bar
-                      dataKey="share"
-                      name="Market Share"
-                      fill="#a855f7"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <p className="text-sm text-gray-500 mt-4 text-center">
-                Our strongest product categories by market penetration
-              </p>
-            </>
-          )}
-        </div>
-
-        {/* Insights Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-800">
-              Strategic Insights
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Key findings and recommendations based on market data
-            </p>
-          </div>
-
-          {chartData?.insights && (
-            <div className="divide-y divide-gray-100">
-              <div
-                className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() =>
-                  setExpandedInsight(
-                    expandedInsight === "trends" ? null : "trends"
-                  )
-                }
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <TrendingUp className="text-green-500 mr-3" size={20} />
-                    <h3 className="font-medium text-gray-900">Market Trends</h3>
-                  </div>
-                  <ChevronDown
-                    size={20}
-                    className={`text-gray-400 transition-transform ${
-                      expandedInsight === "trends" ? "rotate-180" : ""
-                    }`}
-                  />
+        {/* Conditional Rendering: Table for limited data, Charts for complete data */}
+        {filteredMarketData.length <= 2 ? (
+          // Data Table View for terms with limited data
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Detailed Data View - {getTermDisplayName()}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {filteredMarketData.length === 0
+                      ? "No data available for this term"
+                      : `Showing ${filteredMarketData.length} ${
+                          filteredMarketData.length === 1
+                            ? "category"
+                            : "categories"
+                        } with available data`}
+                  </p>
                 </div>
-                {expandedInsight === "trends" && (
-                  <div className="mt-4 pl-9 text-gray-700">
-                    <p>{chartData.insights?.overallMarketTrends}</p>
-                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-sm font-medium text-blue-800">
-                          Fastest Growing
-                        </p>
-                        <p className="font-bold text-blue-900">
-                          {chartData.insights.fastestGrowing}
-                        </p>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-lg">
-                        <p className="text-sm font-medium text-purple-800">
-                          Top Performing
-                        </p>
-                        <p className="font-bold text-purple-900">
-                          {chartData.insights.topPerforming}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() =>
-                  setExpandedInsight(
-                    expandedInsight === "opportunities" ? null : "opportunities"
-                  )
-                }
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <Target className="text-red-500 mr-3" size={20} />
-                    <h3 className="font-medium text-gray-900">
-                      Growth Opportunities
-                    </h3>
-                  </div>
-                  <ChevronDown
-                    size={20}
-                    className={`text-gray-400 transition-transform ${
-                      expandedInsight === "opportunities" ? "rotate-180" : ""
-                    }`}
-                  />
+                <div className="px-4 py-2 bg-blue-100 rounded-lg">
+                  <p className="text-xs font-medium text-blue-800">
+                    Limited Data
+                  </p>
+                  <p className="text-xs text-blue-600">Table View</p>
                 </div>
-                {expandedInsight === "opportunities" && (
-                  <div className="mt-4 pl-9 text-gray-700">
-                    <ul className="list-disc pl-5 space-y-2">
-                      <li>
-                        <span className="font-medium">
-                          High-growth categories:
-                        </span>{" "}
-                        Medical insurance shows the strongest industry growth at
-                        15.1% YoY
-                      </li>
-                      <li>
-                        <span className="font-medium">
-                          Underpenetrated segments:
-                        </span>{" "}
-                        Aviation has low market penetration (1.8%) but growing
-                        Minet premiums (+28%)
-                      </li>
-                      <li>
-                        <span className="font-medium">Declining segments:</span>{" "}
-                        Engineering shows declining premiums (-11.7%) despite
-                        overall industry growth
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() =>
-                  setExpandedInsight(
-                    expandedInsight === "risks" ? null : "risks"
-                  )
-                }
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <Percent className="text-yellow-500 mr-3" size={20} />
-                    <h3 className="font-medium text-gray-900">Risk Factors</h3>
-                  </div>
-                  <ChevronDown
-                    size={20}
-                    className={`text-gray-400 transition-transform ${
-                      expandedInsight === "risks" ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-                {expandedInsight === "risks" && (
-                  <div className="mt-4 pl-9 text-gray-700">
-                    <div className="mb-4">
-                      <p className="font-medium">Client Concentration:</p>
-                      <p>
-                        {formatPercentage(
-                          chartData.insights.clientConcentration
-                        )}{" "}
-                        of premiums come from just 3 product categories,
-                        creating potential vulnerability
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Claims Impact:</p>
-                      <p>{chartData.insights.claimsRatioImpact}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() =>
-                  setExpandedInsight(
-                    expandedInsight === "recommendations"
-                      ? null
-                      : "recommendations"
-                  )
-                }
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <Leaf className="text-green-600 mr-3" size={20} />
-                    <h3 className="font-medium text-gray-900">
-                      Recommendations
-                    </h3>
-                  </div>
-                  <ChevronDown
-                    size={20}
-                    className={`text-gray-400 transition-transform ${
-                      expandedInsight === "recommendations" ? "rotate-180" : ""
-                    }`}
-                  />
-                </div>
-                {expandedInsight === "recommendations" && (
-                  <div className="mt-4 pl-9 text-gray-700">
-                    <ol className="list-decimal pl-5 space-y-3">
-                      <li>
-                        <span className="font-medium">
-                          Focus on high-growth areas:
-                        </span>{" "}
-                        Allocate more resources to Medical and Aviation sectors
-                        where industry growth is strongest
-                      </li>
-                      <li>
-                        <span className="font-medium">
-                          Stabilize declining segments:
-                        </span>{" "}
-                        Investigate reasons for Engineering premium decline and
-                        develop recovery strategy
-                      </li>
-                      <li>
-                        <span className="font-medium">
-                          Diversify portfolio:
-                        </span>{" "}
-                        Reduce concentration risk by expanding in
-                        underpenetrated categories like Fire Domestic
-                      </li>
-                      <li>
-                        <span className="font-medium">Leverage strengths:</span>{" "}
-                        Capitalize on our strong position in Liability (15.8%
-                        share) through targeted marketing
-                      </li>
-                    </ol>
-                  </div>
-                )}
               </div>
             </div>
-          )}
-        </div>
+
+            {filteredMarketData.length === 0 ? (
+              <div className="p-12 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                  <Award size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No Data Available
+                </h3>
+                <p className="text-gray-600 max-w-md mx-auto">
+                  There is no market share data available for{" "}
+                  {getTermDisplayName()} in Q2 2025. Please check back later or
+                  contact your administrator to upload data.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Market Share
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Market Share Change
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Minet Premiums
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Premium Change
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Industry Premiums
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Industry Growth
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredMarketData.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div
+                              className="w-3 h-3 rounded-full mr-3"
+                              style={{
+                                backgroundColor: COLORS[index % COLORS.length],
+                              }}
+                            ></div>
+                            <span className="text-sm font-medium text-gray-900">
+                              {item.category}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-bold text-gray-900">
+                            {item.minet_market_share_current_year
+                              ? formatPercentage(
+                                  item.minet_market_share_current_year * 100
+                                )
+                              : "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {item.percent_change_current_previous_market_share ? (
+                            <div className="flex items-center justify-end">
+                              {item.percent_change_current_previous_market_share >
+                              0 ? (
+                                <>
+                                  <TrendingUp
+                                    size={16}
+                                    className="text-green-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-green-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous_market_share *
+                                        100
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <TrendingDown
+                                    size={16}
+                                    className="text-red-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-red-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous_market_share *
+                                        100
+                                    )}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-medium text-gray-900">
+                            {item.minet_brokered_premiums_current_year
+                              ? formatCurrency(
+                                  item.minet_brokered_premiums_current_year
+                                )
+                              : "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {item.percent_change_current_previous_premiums ? (
+                            <div className="flex items-center justify-end">
+                              {item.percent_change_current_previous_premiums >
+                              0 ? (
+                                <>
+                                  <TrendingUp
+                                    size={16}
+                                    className="text-green-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-green-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous_premiums *
+                                        100
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <TrendingDown
+                                    size={16}
+                                    className="text-red-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-red-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous_premiums *
+                                        100
+                                    )}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-medium text-gray-900">
+                            {item.industry_gross_premium_current_year
+                              ? formatCurrency(
+                                  item.industry_gross_premium_current_year
+                                )
+                              : "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          {item.percent_change_current_previous ? (
+                            <div className="flex items-center justify-end">
+                              {item.percent_change_current_previous > 0 ? (
+                                <>
+                                  <TrendingUp
+                                    size={16}
+                                    className="text-green-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-green-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous * 100
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <TrendingDown
+                                    size={16}
+                                    className="text-red-500 mr-1"
+                                  />
+                                  <span className="text-sm font-medium text-red-600">
+                                    {formatPercentage(
+                                      item.percent_change_current_previous * 100
+                                    )}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">N/A</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Summary Section for Table View */}
+            {filteredMarketData.length > 0 && (
+              <div className="p-6 bg-gray-50 border-t border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-xs font-medium text-gray-500 uppercase">
+                      Total Categories
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                      {filteredMarketData.length}
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-xs font-medium text-gray-500 uppercase">
+                      Categories with Data
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                      {
+                        filteredMarketData.filter(
+                          (item) => item.minet_market_share_current_year > 0
+                        ).length
+                      }
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
+                    <p className="text-xs font-medium text-gray-500 uppercase">
+                      Data Completeness
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                      {filteredMarketData.length > 0
+                        ? formatPercentage(
+                            (filteredMarketData.filter(
+                              (item) => item.minet_market_share_current_year > 0
+                            ).length /
+                              filteredMarketData.length) *
+                              100
+                          )
+                        : "0%"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Chart View for terms with sufficient data (existing charts)
+          <>
+            {/* Chart Navigation */}
+            <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setActiveTab("product")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "product"
+                      ? "bg-red-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  By Product Line
+                </button>
+                <button
+                  onClick={() => setActiveTab("growth")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "growth"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  Growth Trends
+                </button>
+                <button
+                  onClick={() => setActiveTab("premiums")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "premiums"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  Premiums Analysis
+                </button>
+                <button
+                  onClick={() => setActiveTab("top")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === "top"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  Top Categories
+                </button>
+              </div>
+            </div>
+
+            {/* Main Chart Area */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+              {activeTab === "product" && (
+                <>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Market Share by Product Line - {getTermDisplayName()} (Q2
+                    2025)
+                  </h2>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartData?.marketShareByProductLine}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={120}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                          label={({ name, percent }) =>
+                            `${name}: ${(percent * 100).toFixed(1)}%`
+                          }
+                        >
+                          {chartData?.marketShareByProductLine?.map(
+                            (entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={COLORS[index % COLORS.length]}
+                              />
+                            )
+                          )}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value) => [`${value}%`, "Market Share"]}
+                          contentStyle={{
+                            backgroundColor: "#fff",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Legend
+                          layout="vertical"
+                          verticalAlign="middle"
+                          align="right"
+                          wrapperStyle={{
+                            paddingLeft: "20px",
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Distribution across different insurance product categories
+                  </p>
+                </>
+              )}
+
+              {activeTab === "growth" && (
+                <>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    YoY Growth by Product Line - {getTermDisplayName()} (Q2
+                    2025)
+                  </h2>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData?.growthByProductLine}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                        layout="vertical"
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          type="number"
+                          tickFormatter={(value) => `${value}%`}
+                        />
+                        <YAxis
+                          dataKey="category"
+                          type="category"
+                          width={120}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <Tooltip
+                          formatter={(value) => [`${value}%`, "Growth"]}
+                          contentStyle={{
+                            backgroundColor: "#fff",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="growth"
+                          name="YoY Growth"
+                          fill="#10b981"
+                          radius={[0, 4, 4, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Year-over-year growth rates across product categories
+                  </p>
+                </>
+              )}
+
+              {activeTab === "premiums" && (
+                <>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Industry vs. Minet Premiums - {getTermDisplayName()} (Q2
+                    2025)
+                  </h2>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData?.premiumsData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="category"
+                          angle={-45}
+                          textAnchor="end"
+                          height={70}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis
+                          tickFormatter={(value) => formatCurrency(value)}
+                          width={100}
+                        />
+                        <Tooltip
+                          formatter={(value, name) => [
+                            formatCurrency(value),
+                            name === "industry" ? "Industry" : "Minet",
+                          ]}
+                          contentStyle={{
+                            backgroundColor: "#fff",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="industry"
+                          name="Industry Premiums"
+                          fill="#6366f1"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="minet"
+                          name="Minet Premiums"
+                          fill="#06b6d4"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Comparison between total industry premiums and Minet's
+                    brokered premiums
+                  </p>
+                </>
+              )}
+
+              {activeTab === "top" && (
+                <>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Top 5 Categories by Market Share - {getTermDisplayName()}{" "}
+                    (Q2 2025)
+                  </h2>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={chartData?.topCategories}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="category"
+                          angle={-45}
+                          textAnchor="end"
+                          height={70}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis
+                          tickFormatter={(value) => `${value}%`}
+                          width={40}
+                        />
+                        <Tooltip
+                          formatter={(value) => [`${value}%`, "Market Share"]}
+                          contentStyle={{
+                            backgroundColor: "#fff",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="share"
+                          name="Market Share"
+                          fill="#a855f7"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-4 text-center">
+                    Our strongest product categories by market penetration
+                  </p>
+                </>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
