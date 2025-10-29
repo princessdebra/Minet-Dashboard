@@ -68,6 +68,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
   const [expandedInsight, setExpandedInsight] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [selectedTerm, setSelectedTerm] = useState("SHORT TERM INSURANCE"); // New filter state
 
   // Check if user is admin
   const isAdmin = userRole === "admin";
@@ -159,14 +160,35 @@ const MarketSharePage = ({ onBack, userRole }) => {
   const processData = () => {
     if (!marketData) return null;
 
+    // Filter data by selected term
+    const filteredData = marketData.filter(
+      (item) => item.term === selectedTerm
+    );
+
+    if (filteredData.length === 0) {
+      return {
+        marketShareByProductLine: [],
+        growthByProductLine: [],
+        topCategories: [],
+        premiumsData: [],
+        insights: {
+          overallMarketTrends: "No data available for selected term",
+          topPerforming: "N/A",
+          fastestGrowing: "N/A",
+          clientConcentration: 0,
+          claimsRatioImpact: "No data available",
+        },
+      };
+    }
+
     // Market share by product line (using category)
-    const marketShareByProductLine = marketData.map((item) => ({
+    const marketShareByProductLine = filteredData.map((item) => ({
       name: item.category.trim(),
       value: item.minet_market_share_current_year * 100, // Convert to percentage
     }));
 
     // Growth/Decline by product line
-    const growthByProductLine = marketData
+    const growthByProductLine = filteredData
       .map((item) => ({
         category: item.category.trim(),
         growth: item.percent_change_current_previous_market_share * 100,
@@ -175,7 +197,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
       .sort((a, b) => b.growth - a.growth);
 
     // Top performing categories by market share
-    const topCategories = [...marketData]
+    const topCategories = [...filteredData]
       .sort(
         (a, b) =>
           b.minet_market_share_current_year - a.minet_market_share_current_year
@@ -187,7 +209,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
       }));
 
     // Premiums data
-    const premiumsData = marketData.map((item) => ({
+    const premiumsData = filteredData.map((item) => ({
       category: item.category.trim(),
       industry: item.industry_gross_premium_current_year,
       minet: item.minet_brokered_premiums_current_year,
@@ -197,11 +219,12 @@ const MarketSharePage = ({ onBack, userRole }) => {
     const insights = {
       overallMarketTrends:
         "Market is growing at 7.3% YoY with strongest growth in Medical (15.1%)",
-      topPerforming: marketShareByProductLine.reduce(
-        (max, item) => (item.value > max.value ? item : max),
-        marketShareByProductLine[0]
-      ).name,
-      fastestGrowing: growthByProductLine[0].category,
+      topPerforming:
+        marketShareByProductLine.reduce(
+          (max, item) => (item.value > max.value ? item : max),
+          marketShareByProductLine[0]
+        )?.name || "N/A",
+      fastestGrowing: growthByProductLine[0]?.category || "N/A",
       clientConcentration: 0.32, // Example value
       claimsRatioImpact:
         "Positive claims experience in Liability and Medical sectors",
@@ -217,6 +240,25 @@ const MarketSharePage = ({ onBack, userRole }) => {
   };
 
   const chartData = processData();
+
+  // Get filtered market data for metrics calculations
+  const filteredMarketData = marketData
+    ? marketData.filter((item) => item.term === selectedTerm)
+    : [];
+
+  // Format term name for display
+  const getTermDisplayName = () => {
+    switch (selectedTerm) {
+      case "SHORT TERM INSURANCE":
+        return "Short Term Insurance";
+      case "LONG-TERM INSURANCE":
+        return "Long-Term Insurance";
+      case "REINSURANCE":
+        return "Reinsurance";
+      default:
+        return selectedTerm;
+    }
+  };
 
   if (loading) {
     return (
@@ -285,6 +327,32 @@ const MarketSharePage = ({ onBack, userRole }) => {
               </button>
             </div>
           </div>
+
+          {/* Term Filter */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-sm font-medium text-gray-700 self-center mr-2">
+              Filter by Term:
+            </span>
+            {["SHORT TERM INSURANCE", "LONG-TERM INSURANCE", "REINSURANCE"].map(
+              (term) => (
+                <button
+                  key={term}
+                  onClick={() => setSelectedTerm(term)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                    selectedTerm === term
+                      ? "bg-red-600 text-white shadow-md"
+                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {term === "SHORT TERM INSURANCE"
+                    ? "Short Term"
+                    : term === "LONG-TERM INSURANCE"
+                      ? "Long Term"
+                      : "Reinsurance"}
+                </button>
+              )
+            )}
+          </div>
           {/* CSV Upload Section - Only visible for admins */}
           {isAdmin && (
             <div className="flex items-center space-x-4 mt-6">
@@ -322,80 +390,346 @@ const MarketSharePage = ({ onBack, userRole }) => {
           )}
         </header>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+        {/* Overall Key Metrics (All Terms - Q2 2025) */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            Overall Performance - All Terms (Q2 2025)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Avg. Market Share
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {marketData && marketData.length > 0
+                      ? formatPercentage(
+                          marketData.reduce(
+                            (sum, item) =>
+                              sum + item.minet_market_share_current_year,
+                            0
+                          ) / marketData.length
+                        )
+                      : "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
+                  <Globe size={24} />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp size={16} className="text-green-500 mr-1" />
+                <span className="text-green-600 font-medium">
+                  {marketData && marketData.length > 0
+                    ? formatPercentage(
+                        marketData.reduce(
+                          (sum, item) =>
+                            sum +
+                            item.percent_change_current_previous_market_share,
+                          0
+                        ) / marketData.length
+                      )
+                    : "N/A"}
+                </span>
+                <span className="text-gray-500 ml-1">vs last year</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Brokered Premiums
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {marketData && marketData.length > 0
+                      ? formatCurrency(
+                          marketData.reduce(
+                            (sum, item) =>
+                              sum + item.minet_brokered_premiums_current_year,
+                            0
+                          )
+                        )
+                      : "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-purple-50 text-purple-600">
+                  <Briefcase size={24} />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp size={16} className="text-green-500 mr-1" />
+                <span className="text-green-600 font-medium">
+                  {marketData && marketData.length > 0
+                    ? formatPercentage(
+                        marketData.reduce(
+                          (sum, item) =>
+                            sum + item.percent_change_current_previous_premiums,
+                          0
+                        ) / marketData.length
+                      )
+                    : "N/A"}
+                </span>
+                <span className="text-gray-500 ml-1">vs previous period</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Industry Premiums
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {marketData && marketData.length > 0
+                      ? formatCurrency(
+                          marketData.reduce(
+                            (sum, item) =>
+                              sum + item.industry_gross_premium_current_year,
+                            0
+                          )
+                        )
+                      : "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-green-50 text-green-600">
+                  <Award size={24} />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp size={16} className="text-green-500 mr-1" />
+                <span className="text-green-600 font-medium">
+                  {marketData && marketData.length > 0
+                    ? formatPercentage(
+                        marketData.reduce(
+                          (sum, item) =>
+                            sum + item.percent_change_current_previous,
+                          0
+                        ) / marketData.length
+                      )
+                    : "N/A"}
+                </span>
+                <span className="text-gray-500 ml-1">industry growth</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Term-Specific Metrics */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+            {getTermDisplayName()} Performance (Q2 2025)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Minet Premiums for Selected Term */}
+            <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl shadow-sm border border-red-200">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-red-900">
+                  Minet Premiums
+                </p>
+                <Briefcase size={20} className="text-red-600" />
+              </div>
+              <p className="text-2xl font-bold text-red-900">
+                {filteredMarketData.length > 0
+                  ? formatCurrency(
+                      filteredMarketData.reduce(
+                        (sum, item) =>
+                          sum + item.minet_brokered_premiums_current_year,
+                        0
+                      )
+                    )
+                  : "N/A"}
+              </p>
+              <div className="mt-3 flex items-center text-sm">
+                {filteredMarketData.length > 0 &&
+                filteredMarketData.reduce(
+                  (sum, item) =>
+                    sum + item.percent_change_current_previous_premiums,
+                  0
+                ) /
+                  filteredMarketData.length >
+                  0 ? (
+                  <>
+                    <TrendingUp size={16} className="text-green-600 mr-1" />
+                    <span className="text-green-700 font-medium">
+                      {formatPercentage(
+                        filteredMarketData.reduce(
+                          (sum, item) =>
+                            sum + item.percent_change_current_previous_premiums,
+                          0
+                        ) / filteredMarketData.length
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown size={16} className="text-red-600 mr-1" />
+                    <span className="text-red-700 font-medium">
+                      {filteredMarketData.length > 0
+                        ? formatPercentage(
+                            filteredMarketData.reduce(
+                              (sum, item) =>
+                                sum +
+                                item.percent_change_current_previous_premiums,
+                              0
+                            ) / filteredMarketData.length
+                          )
+                        : "N/A"}
+                    </span>
+                  </>
+                )}
+                <span className="text-red-800 ml-1">vs previous year</span>
+              </div>
+            </div>
+
+            {/* Industry Premiums for Selected Term */}
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-blue-900">
+                  Industry Premiums
+                </p>
+                <Globe size={20} className="text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-900">
+                {filteredMarketData.length > 0
+                  ? formatCurrency(
+                      filteredMarketData.reduce(
+                        (sum, item) =>
+                          sum + item.industry_gross_premium_current_year,
+                        0
+                      )
+                    )
+                  : "N/A"}
+              </p>
+              <div className="mt-3 flex items-center text-sm">
+                {filteredMarketData.length > 0 &&
+                filteredMarketData.reduce(
+                  (sum, item) => sum + item.percent_change_current_previous,
+                  0
+                ) /
+                  filteredMarketData.length >
+                  0 ? (
+                  <>
+                    <TrendingUp size={16} className="text-green-600 mr-1" />
+                    <span className="text-green-700 font-medium">
+                      {formatPercentage(
+                        filteredMarketData.reduce(
+                          (sum, item) =>
+                            sum + item.percent_change_current_previous,
+                          0
+                        ) / filteredMarketData.length
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown size={16} className="text-red-600 mr-1" />
+                    <span className="text-red-700 font-medium">
+                      {filteredMarketData.length > 0
+                        ? formatPercentage(
+                            filteredMarketData.reduce(
+                              (sum, item) =>
+                                sum + item.percent_change_current_previous,
+                              0
+                            ) / filteredMarketData.length
+                          )
+                        : "N/A"}
+                    </span>
+                  </>
+                )}
+                <span className="text-blue-800 ml-1">industry growth</span>
+              </div>
+            </div>
+
+            {/* Average Market Share for Selected Term */}
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-sm border border-purple-200">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-purple-900">
                   Avg. Market Share
                 </p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatPercentage(
-                    marketData.reduce(
-                      (sum, item) => sum + item.minet_market_share_current_year,
-                      0
-                    ) / marketData.length
-                  )}
-                </p>
+                <Target size={20} className="text-purple-600" />
               </div>
-              <div className="p-3 rounded-lg bg-blue-50 text-blue-600">
-                <Globe size={24} />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <TrendingUp size={16} className="text-green-500 mr-1" />
-              <span className="text-green-600 font-medium">+2.4%</span>
-              <span className="text-gray-500 ml-1">vs last year</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Brokered Premiums
-                </p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {formatCurrency(
-                    marketData.reduce(
-                      (sum, item) =>
-                        sum + item.minet_brokered_premiums_current_year,
-                      0
+              <p className="text-2xl font-bold text-purple-900">
+                {filteredMarketData.length > 0
+                  ? formatPercentage(
+                      filteredMarketData.reduce(
+                        (sum, item) =>
+                          sum + item.minet_market_share_current_year,
+                        0
+                      ) / filteredMarketData.length
                     )
-                  )}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-purple-50 text-purple-600">
-                <Briefcase size={24} />
+                  : "N/A"}
+              </p>
+              <div className="mt-3 flex items-center text-sm">
+                {filteredMarketData.length > 0 &&
+                filteredMarketData.reduce(
+                  (sum, item) =>
+                    sum + item.percent_change_current_previous_market_share,
+                  0
+                ) /
+                  filteredMarketData.length >
+                  0 ? (
+                  <>
+                    <TrendingUp size={16} className="text-green-600 mr-1" />
+                    <span className="text-green-700 font-medium">
+                      {formatPercentage(
+                        filteredMarketData.reduce(
+                          (sum, item) =>
+                            sum +
+                            item.percent_change_current_previous_market_share,
+                          0
+                        ) / filteredMarketData.length
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown size={16} className="text-red-600 mr-1" />
+                    <span className="text-red-700 font-medium">
+                      {filteredMarketData.length > 0
+                        ? formatPercentage(
+                            filteredMarketData.reduce(
+                              (sum, item) =>
+                                sum +
+                                item.percent_change_current_previous_market_share,
+                              0
+                            ) / filteredMarketData.length
+                          )
+                        : "N/A"}
+                    </span>
+                  </>
+                )}
+                <span className="text-purple-800 ml-1">vs previous year</span>
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
-              <TrendingUp size={16} className="text-green-500 mr-1" />
-              <span className="text-green-600 font-medium">+12.7%</span>
-              <span className="text-gray-500 ml-1">vs previous period</span>
-            </div>
-          </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Top Performing Category
+            {/* Number of Categories */}
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl shadow-sm border border-green-200">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-green-900">
+                  Active Categories
                 </p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">
-                  {chartData?.topCategories[0]?.category || "N/A"}
+                <Award size={20} className="text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-green-900">
+                {filteredMarketData.length}
+              </p>
+              <div className="mt-3">
+                <p className="text-sm text-green-800">
+                  Top:{" "}
+                  <span className="font-semibold">
+                    {chartData?.topCategories[0]?.category || "N/A"}
+                  </span>
+                </p>
+                <p className="text-xs text-green-700 mt-1">
+                  {chartData?.topCategories[0]?.share
+                    ? `${formatPercentage(
+                        chartData.topCategories[0].share
+                      )} market share`
+                    : ""}
                 </p>
               </div>
-              <div className="p-3 rounded-lg bg-green-50 text-green-600">
-                <Award size={24} />
-              </div>
-            </div>
-            <div className="mt-4">
-              <span className="text-sm font-medium text-gray-900">
-                {formatPercentage(chartData?.topCategories[0]?.share || 0)}
-              </span>
-              <span className="text-sm text-gray-500 ml-1">market share</span>
             </div>
           </div>
         </div>
@@ -451,7 +785,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
           {activeTab === "product" && (
             <>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Market Share by Product Line
+                Market Share by Product Line - {getTermDisplayName()} (Q2 2025)
               </h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -507,7 +841,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
           {activeTab === "growth" && (
             <>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                YoY Growth by Product Line
+                YoY Growth by Product Line - {getTermDisplayName()} (Q2 2025)
               </h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -555,7 +889,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
           {activeTab === "premiums" && (
             <>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Industry vs. Minet Premiums
+                Industry vs. Minet Premiums - {getTermDisplayName()} (Q2 2025)
               </h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
@@ -613,7 +947,8 @@ const MarketSharePage = ({ onBack, userRole }) => {
           {activeTab === "top" && (
             <>
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Top 5 Categories by Market Share
+                Top 5 Categories by Market Share - {getTermDisplayName()} (Q2
+                2025)
               </h2>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
