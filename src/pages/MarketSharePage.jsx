@@ -74,7 +74,8 @@ const MarketSharePage = ({ onBack, userRole }) => {
 
   const fetchMarketData = async () => {
     try {
-      const response = await fetch(API_URL + "/api/market-share");
+      // Fetch only the current/latest quarter data
+      const response = await fetch(API_URL + "/api/market-share/current");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -161,34 +162,35 @@ const MarketSharePage = ({ onBack, userRole }) => {
     // Market share by product line (using category)
     const marketShareByProductLine = marketData.map((item) => ({
       name: item.category.trim(),
-      value: item.minet_market_share_q4_2023 * 100, // Convert to percentage
+      value: item.minet_market_share_current_year * 100, // Convert to percentage
     }));
 
     // Growth/Decline by product line
     const growthByProductLine = marketData
       .map((item) => ({
         category: item.category.trim(),
-        growth: item.percent_change_2024_2023 * 100,
-        marketShare: item.minet_market_share_q4_2023 * 100,
+        growth: item.percent_change_current_previous_market_share * 100,
+        marketShare: item.minet_market_share_current_year * 100,
       }))
       .sort((a, b) => b.growth - a.growth);
 
     // Top performing categories by market share
     const topCategories = [...marketData]
       .sort(
-        (a, b) => b.minet_market_share_q4_2023 - a.minet_market_share_q4_2023
+        (a, b) =>
+          b.minet_market_share_current_year - a.minet_market_share_current_year
       )
       .slice(0, 5)
       .map((item) => ({
         category: item.category.trim(),
-        share: item.minet_market_share_q4_2023 * 100,
+        share: item.minet_market_share_current_year * 100,
       }));
 
     // Premiums data
     const premiumsData = marketData.map((item) => ({
       category: item.category.trim(),
-      industry: item.industry_gross_premium_q4_2024,
-      minet: item.minet_brokered_premiums_q4_2024,
+      industry: item.industry_gross_premium_current_year,
+      minet: item.minet_brokered_premiums_current_year,
     }));
 
     // Insights
@@ -273,9 +275,12 @@ const MarketSharePage = ({ onBack, userRole }) => {
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-500">
-                Last updated: Q4 2024
+                Last updated: Q2 2025
               </span>
-              <button className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50">
+              <button
+                onClick={fetchMarketData}
+                className="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50"
+              >
                 <RefreshCw size={16} />
               </button>
             </div>
@@ -328,7 +333,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {formatPercentage(
                     marketData.reduce(
-                      (sum, item) => sum + item.minet_market_share_q4_2023,
+                      (sum, item) => sum + item.minet_market_share_current_year,
                       0
                     ) / marketData.length
                   )}
@@ -354,7 +359,8 @@ const MarketSharePage = ({ onBack, userRole }) => {
                 <p className="text-2xl font-bold text-gray-900 mt-1">
                   {formatCurrency(
                     marketData.reduce(
-                      (sum, item) => sum + item.minet_brokered_premiums_q4_2024,
+                      (sum, item) =>
+                        sum + item.minet_brokered_premiums_current_year,
                       0
                     )
                   )}
@@ -367,7 +373,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
             <div className="mt-4 flex items-center text-sm">
               <TrendingUp size={16} className="text-green-500 mr-1" />
               <span className="text-green-600 font-medium">+12.7%</span>
-              <span className="text-gray-500 ml-1">vs Q4 2023</span>
+              <span className="text-gray-500 ml-1">vs previous period</span>
             </div>
           </div>
 

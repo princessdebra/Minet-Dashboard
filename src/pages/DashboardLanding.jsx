@@ -142,9 +142,12 @@ const DashboardLanding = ({
     const winRate =
       totalOpportunities > 0 ? wonAccountsCount / totalOpportunities : 0;
 
-    // Get market share data
+    // Get market share data (latest quarter - Q2 2025)
+    const latestMarketShareData = data.marketShare?.filter(
+      (item) => item.year === 2025 && item.quarter === "Q2"
+    );
     const marketShareValue =
-      data.marketShare?.[0]?.minet_market_share_q4_2023 || 0;
+      latestMarketShareData?.[0]?.minet_market_share_current_year || 0;
 
     return {
       wonAccounts: wonAccountsCount,
@@ -155,7 +158,7 @@ const DashboardLanding = ({
       marketShare: marketShareValue,
       wonAccountsData: data.wonAccounts,
       lostAccountsData: data.lostAccounts,
-      marketShareData: data.marketShare,
+      marketShareData: latestMarketShareData || data.marketShare,
       revenueWalkData: data.revenueWalk,
     };
   };
@@ -701,7 +704,7 @@ const DashboardLanding = ({
             {/* Market Share by Category (Pie Chart) */}
             <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Market Share by Category
+                Market Share by Category (Q2 2025)
               </h2>
               <ResponsiveContainer width="100%" height={300}>
                 {dashboardData.marketShare?.length > 0 ? (
@@ -709,7 +712,9 @@ const DashboardLanding = ({
                     <Pie
                       data={dashboardData.marketShare
                         .filter(
-                          (item) => item.minet_market_share_q4_2023 !== null
+                          (item) =>
+                            item.minet_market_share_current_year !== null &&
+                            item.minet_market_share_current_year > 0
                         )
                         .slice(0, 5)}
                       cx="50%"
@@ -717,7 +722,7 @@ const DashboardLanding = ({
                       labelLine={false}
                       outerRadius={80}
                       fill="#8884d8"
-                      dataKey="minet_market_share_q4_2023"
+                      dataKey="minet_market_share_current_year"
                       nameKey="category"
                       label={({ name, percent }) =>
                         `${name}: ${(percent * 100).toFixed(0)}%`
