@@ -1187,26 +1187,26 @@ const WonAccountsPage = ({ onBack, userRole }) => {
 
         {/* CSV Upload Sections - Only visible for admins */}
         {isAdmin && (
-          <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="mt-8 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">
               Admin Tools
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl">
               {/* Won Accounts CSV Section */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h4 className="text-lg font-semibold text-gray-800 mb-3">
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">
                   Won Accounts Data
                 </h4>
 
                 {/* Year Selection */}
-                <div className="mb-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Select Year for Template
                   </label>
                   <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
                   >
                     {Array.from({ length: 3 }, (_, i) => {
                       const year = new Date().getFullYear() + i;
@@ -1222,15 +1222,15 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadTemplate}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
                   >
-                    <Download size={16} /> Download {selectedYear} Template
+                    <Download size={14} /> Download {selectedYear} Template
                   </button>
                   <label
                     htmlFor="csv-upload"
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition cursor-pointer text-xs font-medium"
                   >
-                    <Upload size={16} /> Upload CSV
+                    <Upload size={14} /> Upload CSV
                   </label>
                   <input
                     id="csv-upload"
@@ -1243,22 +1243,29 @@ const WonAccountsPage = ({ onBack, userRole }) => {
               </div>
 
               {/* Various Data CSV Section */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h4 className="text-lg font-semibold text-gray-800 mb-3">
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex flex-col">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2">
                   Various Divisions Data
                 </h4>
+                
+                {/* Add spacing to match the height of the year dropdown */}
+                <div className="mb-2">
+                  <div className="h-[18px]"></div>
+                  <div className="h-[34px]"></div>
+                </div>
+
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadVariousTemplate}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
                   >
-                    <Download size={16} /> Download Template
+                    <Download size={14} /> Download Template
                   </button>
                   <label
                     htmlFor="various-csv-upload"
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition cursor-pointer text-xs font-medium"
                   >
-                    <Upload size={16} /> Upload CSV
+                    <Upload size={14} /> Upload CSV
                   </label>
                   <input
                     id="various-csv-upload"
