@@ -326,41 +326,6 @@ const MarketSharePage = ({ onBack, userRole }) => {
               )
             )}
           </div>
-          {/* CSV Upload Section - Only visible for admins */}
-          {isAdmin && (
-            <div className="flex items-center space-x-4 mt-6">
-              <button
-                onClick={handleDownloadCSV}
-                className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-600 rounded-md shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-              >
-                <Download size={16} className="mr-2" /> Download CSV Template
-              </button>
-
-              <label
-                htmlFor="file-upload"
-                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm cursor-pointer hover:bg-red-700 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500 transition-colors"
-              >
-                <Upload size={16} className="mr-2" /> Upload CSV
-                <input
-                  id="file-upload"
-                  name="file-upload"
-                  type="file"
-                  accept=".csv"
-                  className="sr-only"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-              </label>
-
-              {uploadStatus && (
-                <p
-                  className={`text-sm font-medium ${uploadStatus.includes("failed") ? "text-red-600" : "text-green-600"}`}
-                >
-                  {uploadStatus}
-                </p>
-              )}
-            </div>
-          )}
         </header>
 
         {/* Overall Key Metrics (All Terms - Q2 2025) */}
@@ -1202,6 +1167,47 @@ const MarketSharePage = ({ onBack, userRole }) => {
               )}
             </div>
           </>
+        )}
+
+        {/* CSV Upload Section - Only visible for admins */}
+        {isAdmin && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Admin Tools
+            </h3>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleDownloadCSV}
+                className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-600 rounded-md shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              >
+                <Download size={16} className="mr-2" /> Download CSV Template
+              </button>
+
+              <label
+                htmlFor="file-upload"
+                className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm cursor-pointer hover:bg-red-700 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500 transition-colors"
+              >
+                <Upload size={16} className="mr-2" /> Upload CSV
+                <input
+                  id="file-upload"
+                  name="file-upload"
+                  type="file"
+                  accept=".csv"
+                  className="sr-only"
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                />
+              </label>
+
+              {uploadStatus && (
+                <p
+                  className={`text-sm font-medium ${uploadStatus.includes("failed") ? "text-red-600" : "text-green-600"}`}
+                >
+                  {uploadStatus}
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>

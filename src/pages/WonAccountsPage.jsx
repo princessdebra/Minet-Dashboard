@@ -304,89 +304,6 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             <ArrowLeft size={20} /> Back to Dashboard
           </button>
 
-          {/* CSV Upload Sections - Only visible for admins */}
-          {isAdmin && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Won Accounts CSV Section */}
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Won Accounts Data
-                </h3>
-
-                {/* Year Selection */}
-                <div className="mb-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Year for Template
-                  </label>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    {Array.from({ length: 3 }, (_, i) => {
-                      const year = new Date().getFullYear() + i;
-                      return (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleDownloadTemplate}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
-                  >
-                    <Download size={16} /> Download {selectedYear} Template
-                  </button>
-                  <label
-                    htmlFor="csv-upload"
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
-                  >
-                    <Upload size={16} /> Upload CSV
-                  </label>
-                  <input
-                    id="csv-upload"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleUploadCSV}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-
-              {/* Various Data CSV Section */}
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Various Divisions Data
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleDownloadVariousTemplate}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
-                  >
-                    <Download size={16} /> Download Template
-                  </button>
-                  <label
-                    htmlFor="various-csv-upload"
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
-                  >
-                    <Upload size={16} /> Upload CSV
-                  </label>
-                  <input
-                    id="various-csv-upload"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleUploadVariousCSV}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center gap-3">
               Won Accounts Analytics
@@ -1267,6 +1184,94 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             </div>
           )}
         </main>
+
+        {/* CSV Upload Sections - Only visible for admins */}
+        {isAdmin && (
+          <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Admin Tools
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Won Accounts CSV Section */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                  Won Accounts Data
+                </h4>
+
+                {/* Year Selection */}
+                <div className="mb-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Year for Template
+                  </label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    {Array.from({ length: 3 }, (_, i) => {
+                      const year = new Date().getFullYear() + i;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
+                  >
+                    <Download size={16} /> Download {selectedYear} Template
+                  </button>
+                  <label
+                    htmlFor="csv-upload"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
+                  >
+                    <Upload size={16} /> Upload CSV
+                  </label>
+                  <input
+                    id="csv-upload"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleUploadCSV}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Various Data CSV Section */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                  Various Divisions Data
+                </h4>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDownloadVariousTemplate}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-red-600 border border-red-600 rounded-lg shadow-sm hover:bg-red-50 transition text-sm"
+                  >
+                    <Download size={16} /> Download Template
+                  </button>
+                  <label
+                    htmlFor="various-csv-upload"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition cursor-pointer text-sm"
+                  >
+                    <Upload size={16} /> Upload CSV
+                  </label>
+                  <input
+                    id="various-csv-upload"
+                    type="file"
+                    accept=".csv"
+                    onChange={handleUploadVariousCSV}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
