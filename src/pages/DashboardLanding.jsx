@@ -329,6 +329,7 @@ const DashboardLanding = ({
       color: "bg-green-50",
       description: "Total accounts won this year.",
       suffix: "",
+      navigateTo: "wonAccounts",
     },
     {
       title: "Lost Accounts",
@@ -338,6 +339,7 @@ const DashboardLanding = ({
       color: "bg-red-50",
       description: "Total accounts lost this year.",
       suffix: "",
+      navigateTo: "lostAccounts",
     },
     {
       title: "Won Accounts Revenue",
@@ -347,6 +349,7 @@ const DashboardLanding = ({
       color: "bg-blue-50",
       description: "Total revenue from won accounts.",
       formatter: formatCurrency,
+      navigateTo: "wonAccounts",
     },
     {
       title: "Lost Accounts Revenue",
@@ -356,6 +359,7 @@ const DashboardLanding = ({
       color: "bg-orange-50",
       description: "Total revenue lost from accounts.",
       formatter: formatCurrency,
+      navigateTo: "lostAccounts",
     },
   ];
 
@@ -454,7 +458,10 @@ const DashboardLanding = ({
             {KPI_CARDS.map((kpi, index) => (
               <div
                 key={index}
-                className={`${kpi.color} p-6 rounded-2xl shadow-md border border-gray-200 transition-transform transform hover:scale-105`}
+                onClick={() => kpi.navigateTo && onNavigate(kpi.navigateTo)}
+                className={`${kpi.color} p-6 rounded-2xl shadow-md border border-gray-200 transition-transform transform hover:scale-105 ${
+                  kpi.navigateTo ? "cursor-pointer" : ""
+                }`}
               >
                 <div className="flex items-center mb-3">
                   <div
@@ -635,7 +642,10 @@ const DashboardLanding = ({
           {/* Other Sections */}
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Recent Won Accounts (Table) */}
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+            <div
+              onClick={() => onNavigate("wonAccounts")}
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
+            >
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Recent Won Accounts
               </h2>
@@ -702,7 +712,10 @@ const DashboardLanding = ({
             </div>
 
             {/* Market Share by Category (Pie Chart) */}
-            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+            <div
+              onClick={() => onNavigate("marketShare")}
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
+            >
               <h2 className="text-xl font-bold text-gray-800 mb-4">
                 Market Share by Category (Q2 2025)
               </h2>

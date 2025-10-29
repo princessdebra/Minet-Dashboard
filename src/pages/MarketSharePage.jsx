@@ -935,50 +935,6 @@ const MarketSharePage = ({ onBack, userRole }) => {
                 </table>
               </div>
             )}
-
-            {/* Summary Section for Table View */}
-            {filteredMarketData.length > 0 && (
-              <div className="p-6 bg-gray-50 border-t border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 uppercase">
-                      Total Categories
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {filteredMarketData.length}
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 uppercase">
-                      Categories with Data
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {
-                        filteredMarketData.filter(
-                          (item) => item.minet_market_share_current_year > 0
-                        ).length
-                      }
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs font-medium text-gray-500 uppercase">
-                      Data Completeness
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {filteredMarketData.length > 0
-                        ? formatPercentage(
-                            (filteredMarketData.filter(
-                              (item) => item.minet_market_share_current_year > 0
-                            ).length /
-                              filteredMarketData.length) *
-                              100
-                          )
-                        : "0%"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           // Chart View for terms with sufficient data (existing charts)
