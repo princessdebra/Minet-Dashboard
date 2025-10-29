@@ -440,37 +440,17 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             <div className="space-y-6">
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Won Accounts by Month */}
+                {/* Year on Year Comparison */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-gray-800">
-                      Won Accounts by Month
+                      Year on Year Comparison (2024 vs 2025)
                     </h2>
-                    <CalendarDays className="text-gray-400" />
+                    <TrendingUp className="text-gray-400" />
                   </div>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={sortedWonAccountsByMonth}>
-                        <defs>
-                          <linearGradient
-                            id="colorAccounts"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                          >
-                            <stop
-                              offset="5%"
-                              stopColor="#dc2626"
-                              stopOpacity={0.8}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor="#dc2626"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
+                      <LineChart data={sortDataByMonth(data.yearComparison)}>
                         <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                         <XAxis
                           dataKey="month"
@@ -479,26 +459,37 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                         />
                         <YAxis
                           tick={{ fill: "#6b7280" }}
-                          tickFormatter={(value) => value.toLocaleString()}
+                          tickFormatter={(value) => formatCurrency(value)}
                         />
                         <Tooltip
+                          formatter={(value) => [
+                            formatCurrency(value),
+                            "Revenue",
+                          ]}
                           contentStyle={{
                             background: "rgba(255, 255, 255, 0.96)",
                             border: "1px solid #e5e7eb",
                             borderRadius: "0.5rem",
-                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                           }}
-                          formatter={(value) => [value, "Accounts"]}
                         />
-                        <Area
+                        <Legend />
+                        <Line
                           type="monotone"
-                          dataKey="accountsWon"
-                          name="Accounts Won"
-                          stroke="#dc2626"
-                          fillOpacity={1}
-                          fill="url(#colorAccounts)"
+                          dataKey="2024"
+                          name="2024"
+                          stroke="#9ca3af"
+                          strokeWidth={2}
+                          dot={{ fill: "#9ca3af", strokeWidth: 2, r: 4 }}
                         />
-                      </AreaChart>
+                        <Line
+                          type="monotone"
+                          dataKey="2025"
+                          name="2025"
+                          stroke="#dc2626"
+                          strokeWidth={2}
+                          dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
+                        />
+                      </LineChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
@@ -507,7 +498,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-gray-800">
-                      Won by Premium Band
+                      Won by Income Band
                     </h2>
                     <BarChart3 className="text-gray-400" />
                   </div>
@@ -619,9 +610,14 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                           <span className="font-medium text-gray-700">
                             {segment.segment}
                           </span>
-                          <span className="text-gray-900">
-                            {segment.accountsWon} accounts
-                          </span>
+                          <div className="text-right">
+                            <span className="text-gray-900 font-semibold">
+                              {segment.accountsWon} accounts
+                            </span>
+                            <span className="text-gray-600 text-xs ml-2">
+                              ({formatCurrency(segment.revenueGenerated || 0)})
+                            </span>
+                          </div>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
