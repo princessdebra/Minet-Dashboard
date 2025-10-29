@@ -160,6 +160,7 @@ const DashboardLanding = ({
       lostAccountsData: data.lostAccounts,
       marketShareData: latestMarketShareData || data.marketShare,
       revenueWalkData: data.revenueWalk,
+      revenueWalkSummary: data.revenueWalkSummary,
     };
   };
 
@@ -711,54 +712,85 @@ const DashboardLanding = ({
               </div>
             </div>
 
-            {/* Market Share by Category (Pie Chart) */}
+            {/* Revenue Walk Summary */}
             <div
-              onClick={() => onNavigate("marketShare")}
+              onClick={() => onNavigate("revenue-walk")}
               className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow"
             >
               <h2 className="text-xl font-bold text-gray-800 mb-4">
-                Market Share by Category (Q2 2025)
+                Revenue Walk Summary (2025)
               </h2>
-              <ResponsiveContainer width="100%" height={300}>
-                {dashboardData.marketShare?.length > 0 ? (
-                  <PieChart>
-                    <Pie
-                      data={dashboardData.marketShare
-                        .filter(
-                          (item) =>
-                            item.minet_market_share_current_year !== null &&
-                            item.minet_market_share_current_year > 0
-                        )
-                        .slice(0, 5)}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="minet_market_share_current_year"
-                      nameKey="category"
-                      label={({ name, percent }) =>
-                        `${name}: ${(percent * 100).toFixed(0)}%`
-                      }
-                    >
-                      {dashboardData.marketShare.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => formatPercentage(value)} />
-                    <Legend />
-                  </PieChart>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
-                    No market share data available.
-                  </div>
-                )}
-              </ResponsiveContainer>
-              <div className="mt-6 text-base text-gray-600 text-center">
-                Displays market share across different insurance categories.
+              {dashboardData.revenueWalkSummary ? (
+                <div className="space-y-4">
+                  {/* Calculate totals from backend data */}
+                  {(() => {
+                    const totalInflows = dashboardData.revenueWalkSummary.inflowsGrandTotal?.total_inflows || 0;
+                    const totalOutflows = Math.abs(dashboardData.revenueWalkSummary.outflowsGrandTotal?.total_outflows || 0);
+                    const netResult = dashboardData.revenueWalkSummary.netResult || 0;
+
+                    return (
+                      <>
+                        {/* Summary Cards */}
+                        <div className="grid grid-cols-3 gap-4">
+                          {/* Inflows */}
+                          <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-green-700">Inflows</span>
+                              <TrendingUp size={18} className="text-green-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-green-800">
+                              {formatCurrency(totalInflows)}
+                            </div>
+                          </div>
+
+                          {/* Outflows */}
+                          <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-red-700">Outflows</span>
+                              <TrendingDown size={18} className="text-red-600" />
+                            </div>
+                            <div className="text-2xl font-bold text-red-800">
+                              {formatCurrency(totalOutflows)}
+                            </div>
+                          </div>
+
+                          {/* Net Result */}
+                          <div className={`${netResult >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} p-4 rounded-xl border`}>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className={`text-sm font-medium ${netResult >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>Net Result</span>
+                              <Banknote size={18} className={netResult >= 0 ? 'text-blue-600' : 'text-orange-600'} />
+                            </div>
+                            <div className={`text-2xl font-bold ${netResult >= 0 ? 'text-blue-800' : 'text-orange-800'}`}>
+                              {formatCurrency(netResult)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bar Chart */}
+                        <ResponsiveContainer width="100%" height={200}>
+                          <BarChart data={[
+                            { name: 'Inflows', value: totalInflows, fill: '#10b981' },
+                            { name: 'Outflows', value: totalOutflows, fill: '#ef4444' },
+                            { name: 'Net Result', value: Math.abs(netResult), fill: netResult >= 0 ? '#3b82f6' : '#f97316' }
+                          ]}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                            <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => formatCurrency(value)} />
+                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                            <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-gray-500">
+                  No revenue walk data available.
+                </div>
+              )}
+              <div className="mt-4 text-base text-gray-600 text-center">
+                Track revenue inflows, outflows, and net financial results.
               </div>
             </div>
           </section>

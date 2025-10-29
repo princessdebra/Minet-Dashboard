@@ -1247,7 +1247,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                 <h4 className="text-sm font-semibold text-gray-800 mb-2">
                   Various Divisions Data
                 </h4>
-                
+
                 {/* Add spacing to match the height of the year dropdown */}
                 <div className="mb-2">
                   <div className="h-[18px]"></div>
