@@ -724,9 +724,15 @@ const DashboardLanding = ({
                 <div className="space-y-4">
                   {/* Calculate totals from backend data */}
                   {(() => {
-                    const totalInflows = dashboardData.revenueWalkSummary.inflowsGrandTotal?.total_inflows || 0;
-                    const totalOutflows = Math.abs(dashboardData.revenueWalkSummary.outflowsGrandTotal?.total_outflows || 0);
-                    const netResult = dashboardData.revenueWalkSummary.netResult || 0;
+                    const totalInflows =
+                      dashboardData.revenueWalkSummary.inflowsGrandTotal
+                        ?.total_inflows || 0;
+                    const totalOutflows = Math.abs(
+                      dashboardData.revenueWalkSummary.outflowsGrandTotal
+                        ?.total_outflows || 0
+                    );
+                    const netResult =
+                      dashboardData.revenueWalkSummary.netResult || 0;
 
                     return (
                       <>
@@ -735,8 +741,13 @@ const DashboardLanding = ({
                           {/* Inflows */}
                           <div className="bg-green-50 p-4 rounded-xl border border-green-200">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-green-700">Inflows</span>
-                              <TrendingUp size={18} className="text-green-600" />
+                              <span className="text-sm font-medium text-green-700">
+                                Inflows
+                              </span>
+                              <TrendingUp
+                                size={18}
+                                className="text-green-600"
+                              />
                             </div>
                             <div className="text-2xl font-bold text-green-800">
                               {formatCurrency(totalInflows)}
@@ -746,8 +757,13 @@ const DashboardLanding = ({
                           {/* Outflows */}
                           <div className="bg-red-50 p-4 rounded-xl border border-red-200">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-red-700">Outflows</span>
-                              <TrendingDown size={18} className="text-red-600" />
+                              <span className="text-sm font-medium text-red-700">
+                                Outflows
+                              </span>
+                              <TrendingDown
+                                size={18}
+                                className="text-red-600"
+                              />
                             </div>
                             <div className="text-2xl font-bold text-red-800">
                               {formatCurrency(totalOutflows)}
@@ -755,12 +771,27 @@ const DashboardLanding = ({
                           </div>
 
                           {/* Net Result */}
-                          <div className={`${netResult >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'} p-4 rounded-xl border`}>
+                          <div
+                            className={`${netResult >= 0 ? "bg-blue-50 border-blue-200" : "bg-orange-50 border-orange-200"} p-4 rounded-xl border`}
+                          >
                             <div className="flex items-center justify-between mb-2">
-                              <span className={`text-sm font-medium ${netResult >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>Net Result</span>
-                              <Banknote size={18} className={netResult >= 0 ? 'text-blue-600' : 'text-orange-600'} />
+                              <span
+                                className={`text-sm font-medium ${netResult >= 0 ? "text-blue-700" : "text-orange-700"}`}
+                              >
+                                Net Result
+                              </span>
+                              <Banknote
+                                size={18}
+                                className={
+                                  netResult >= 0
+                                    ? "text-blue-600"
+                                    : "text-orange-600"
+                                }
+                              />
                             </div>
-                            <div className={`text-2xl font-bold ${netResult >= 0 ? 'text-blue-800' : 'text-orange-800'}`}>
+                            <div
+                              className={`text-2xl font-bold ${netResult >= 0 ? "text-blue-800" : "text-orange-800"}`}
+                            >
                               {formatCurrency(netResult)}
                             </div>
                           </div>
@@ -768,15 +799,37 @@ const DashboardLanding = ({
 
                         {/* Bar Chart */}
                         <ResponsiveContainer width="100%" height={200}>
-                          <BarChart data={[
-                            { name: 'Inflows', value: totalInflows, fill: '#10b981' },
-                            { name: 'Outflows', value: totalOutflows, fill: '#ef4444' },
-                            { name: 'Net Result', value: Math.abs(netResult), fill: netResult >= 0 ? '#3b82f6' : '#f97316' }
-                          ]}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <BarChart
+                            data={[
+                              {
+                                name: "Inflows",
+                                value: totalInflows,
+                                fill: "#10b981",
+                              },
+                              {
+                                name: "Outflows",
+                                value: totalOutflows,
+                                fill: "#ef4444",
+                              },
+                              {
+                                name: "Net Result",
+                                value: Math.abs(netResult),
+                                fill: netResult >= 0 ? "#3b82f6" : "#f97316",
+                              },
+                            ]}
+                          >
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              stroke="#e5e7eb"
+                            />
                             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                            <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => formatCurrency(value)} />
-                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                            <YAxis
+                              tick={{ fontSize: 12 }}
+                              tickFormatter={(value) => formatCurrency(value)}
+                            />
+                            <Tooltip
+                              formatter={(value) => formatCurrency(value)}
+                            />
                             <Bar dataKey="value" radius={[8, 8, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
