@@ -55,16 +55,16 @@ const formatPercentage = (value) => {
   return `${(value * 100).toFixed(1)}%`;
 };
 
-// Lost Accounts specific colors - darker reds and burgundy tones
+// Lost Accounts colors - using Minet brand red
 const COLORS_PIE = [
-  "#8B0000",
-  "#A52A2A",
-  "#DC143C",
-  "#CD5C5C",
-  "#F08080",
-  "#FA8072",
+  "#dc2626",
+  "#ef4444",
+  "#f87171",
+  "#fca5a5",
+  "#fecaca",
+  "#fee2e2",
 ];
-const COLORS_BRAND = ["#8B0000", "#A52A2A", "#DC143C", "#CD5C5C", "#B22222"];
+const COLORS_BRAND = ["#dc2626", "#1e40af", "#7e22ce", "#0d9488", "#ea580c"];
 
 const MONTH_ORDER = [
   "January",
@@ -279,21 +279,21 @@ const LostAccountsPage = ({ onBack, userRole }) => {
   if (loading)
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-800"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
       </div>
     );
 
   if (error)
     return (
       <div className="flex flex-col justify-center items-center min-h-screen p-4">
-        <XCircle className="text-red-800 w-16 h-16 mb-4" />
-        <h2 className="text-2xl font-bold text-red-800 mb-2">
+        <XCircle className="text-red-500 w-16 h-16 mb-4" />
+        <h2 className="text-2xl font-bold text-red-600 mb-2">
           Error Loading Data
         </h2>
         <p className="text-gray-600 text-center max-w-md">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-red-800 text-white rounded-md hover:bg-red-900 transition"
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
         >
           Retry
         </button>
@@ -347,7 +347,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
           <div className="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 flex items-center gap-3">
               Lost Accounts Analytics
-              <AlertTriangle className="text-red-800" size={32} />
+              <AlertTriangle className="text-red-600" size={32} />
             </h1>
             <p className="text-gray-600 mt-2">
               Insights into client churn and retention opportunities
@@ -370,7 +370,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 min-w-[140px] py-2 px-4 text-sm font-medium rounded-md transition ${
                   activeTab === tab
-                    ? "bg-red-800 text-white shadow"
+                    ? "bg-red-600 text-white shadow"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 }`}
               >
@@ -397,7 +397,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                 </p>
               </div>
               <div className="bg-red-100 p-3 rounded-full">
-                <Users size={32} className="text-red-800" />
+                <Users size={32} className="text-red-600" />
               </div>
             </div>
 
@@ -474,7 +474,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
               </p>
             </div>
             <div className="bg-red-100 p-3 rounded-full">
-              <DollarSign size={32} className="text-red-800" />
+              <DollarSign size={32} className="text-red-600" />
             </div>
           </div>
 
@@ -529,9 +529,9 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                             type="monotone"
                             dataKey="2025"
                             name="2025"
-                            stroke="#8B0000"
+                            stroke="#dc2626"
                             strokeWidth={2}
-                            dot={{ fill: "#8B0000", strokeWidth: 2, r: 4 }}
+                            dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
@@ -638,12 +638,12 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                             <div
                               className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
                                 index === 0
-                                  ? "bg-red-800"
+                                  ? "bg-red-600"
                                   : index === 1
-                                    ? "bg-gray-600"
+                                    ? "bg-gray-400"
                                     : index === 2
                                       ? "bg-orange-600"
-                                      : "bg-gray-400"
+                                      : "bg-gray-300"
                               }`}
                             >
                               {index + 1}
@@ -769,7 +769,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                         <Bar
                           dataKey="totalAmount"
                           name="Revenue Lost"
-                          fill="#8B0000"
+                          fill="#dc2626"
                           radius={[4, 4, 0, 0]}
                         />
                       </BarChart>
@@ -828,7 +828,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                           <Bar
                             dataKey="lostAccounts"
                             name="lostAccounts"
-                            fill="#8B0000"
+                            fill="#dc2626"
                             radius={[0, 4, 4, 0]}
                           />
                         </BarChart>
@@ -852,7 +852,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
               <div className="mt-8">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                    <TrendingDown className="mr-2 text-red-800" /> Lost Business
+                    <TrendingDown className="mr-2 text-red-600" /> Lost Business
                     Breakdown
                   </h2>
                   {/* Month Selector */}
@@ -865,7 +865,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                       onChange={(e) =>
                         setSelectedMonth(parseInt(e.target.value))
                       }
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800"
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       {[
                         "January",
@@ -998,7 +998,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                           <Bar
                             dataKey="lostBusiness2025"
                             name="2025 Revenue Lost"
-                            fill="#8B0000"
+                            fill="#dc2626"
                             radius={[4, 4, 0, 0]}
                           />
                         </BarChart>
@@ -1080,13 +1080,13 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                         <Bar
                           dataKey="amountWon"
                           name="Amount Won"
-                          fill="#8B0000"
+                          fill="#dc2626"
                           radius={[0, 4, 4, 0]}
                         />
                         <Bar
                           dataKey="accountsWon"
                           name="Accounts Won"
-                          fill="#A52A2A"
+                          fill="#f87171"
                           radius={[0, 4, 4, 0]}
                         />
                       </BarChart>
@@ -1310,7 +1310,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                           yAxisId="left"
                           dataKey="totalAmount"
                           name="Amount Lost"
-                          fill="#8B0000"
+                          fill="#dc2626"
                           radius={[4, 4, 0, 0]}
                         />
                         <Line
@@ -1318,9 +1318,9 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                           type="monotone"
                           dataKey="accountsLost"
                           name="Accounts Lost"
-                          stroke="#DC143C"
+                          stroke="#ef4444"
                           strokeWidth={3}
-                          dot={{ fill: "#DC143C", strokeWidth: 2, r: 5 }}
+                          dot={{ fill: "#ef4444", strokeWidth: 2, r: 5 }}
                         />
                       </ComposedChart>
                     </ResponsiveContainer>
@@ -1362,7 +1362,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                         setDetailsYearFilter(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800"
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       <option value="all">All Years</option>
                       <option value="2025">2025</option>
@@ -1560,7 +1560,7 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                   <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-800 text-sm"
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
                   >
                     {Array.from({ length: 3 }, (_, i) => {
                       const year = new Date().getFullYear() + i;
@@ -1576,13 +1576,13 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadTemplate}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-800 border border-red-800 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
                   >
                     <Download size={14} /> Download {selectedYear} Template
                   </button>
                   <label
                     htmlFor="csv-upload"
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-800 text-white rounded-md shadow-sm hover:bg-red-900 transition cursor-pointer text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition cursor-pointer text-xs font-medium"
                   >
                     <Upload size={14} /> Upload CSV
                   </label>
@@ -1611,13 +1611,13 @@ const LostAccountsPage = ({ onBack, userRole }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownloadVariousTemplate}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-800 border border-red-800 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white text-red-600 border border-red-600 rounded-md shadow-sm hover:bg-red-50 transition text-xs font-medium"
                   >
                     <Download size={14} /> Download Template
                   </button>
                   <label
                     htmlFor="various-csv-upload"
-                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-800 text-white rounded-md shadow-sm hover:bg-red-900 transition cursor-pointer text-xs font-medium"
+                    className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition cursor-pointer text-xs font-medium"
                   >
                     <Upload size={14} /> Upload CSV
                   </label>
