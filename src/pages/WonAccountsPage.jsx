@@ -304,14 +304,20 @@ const WonAccountsPage = ({ onBack, userRole }) => {
       </div>
     );
 
-  // Process data for charts
-  const sortedWonAccountsByMonth = [...data.wonAccountsByMonth].sort(
-    (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
-  );
+  // Process data for charts with safety checks
+  const sortedWonAccountsByMonth =
+    data.wonAccountsByMonth && Array.isArray(data.wonAccountsByMonth)
+      ? [...data.wonAccountsByMonth].sort(
+          (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
+        )
+      : [];
 
-  const sortedMonthlyAmounts = [...data.monthlyAmounts].sort(
-    (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
-  );
+  const sortedMonthlyAmounts =
+    data.monthlyAmounts && Array.isArray(data.monthlyAmounts)
+      ? [...data.monthlyAmounts].sort(
+          (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
+        )
+      : [];
 
   // Merge monthly amounts with accounts won for combo chart
   const mergedMonthlyData = sortedMonthlyAmounts.map((monthData) => {
