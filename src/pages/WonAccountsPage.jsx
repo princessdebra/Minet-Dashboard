@@ -84,7 +84,7 @@ const MONTH_ORDER = [
 const sortDataByMonth = (data) => {
   if (!data || !Array.isArray(data)) return [];
 
-  return data.sort((a, b) => {
+  return [...data].sort((a, b) => {
     return MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month);
   });
 };
@@ -391,7 +391,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   Total Won Accounts
                 </h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {data.totalWonAccounts.toLocaleString()}
+                  {(data?.totalWonAccounts || 0).toLocaleString()}
                 </p>
                 <p className="text-green-600 mt-1 flex items-center gap-1 text-sm">
                   <TrendingUp size={16} /> All time
@@ -409,7 +409,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   Total MKIB
                 </h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {formatCurrency(data.totalMKIB)}
+                  {formatCurrency(data?.totalMKIB || 0)}
                 </p>
                 <p className="text-blue-600 mt-1 flex items-center gap-1 text-sm">
                   <Building size={16} /> Retail & SME + Reinsurance
@@ -427,7 +427,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   Total MKFS
                 </h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {formatCurrency(data.totalMKFS)}
+                  {formatCurrency(data?.totalMKFS || 0)}
                 </p>
                 <p className="text-purple-600 mt-1 flex items-center gap-1 text-sm">
                   <PieChartIcon size={16} /> Pensions
@@ -445,7 +445,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   Total MKIC
                 </h3>
                 <p className="text-3xl font-bold text-gray-900 mt-2">
-                  {formatCurrency(data.totalMKIC)}
+                  {formatCurrency(data?.totalMKIC || 0)}
                 </p>
                 <p className="text-orange-600 mt-1 flex items-center gap-1 text-sm">
                   <Target size={16} /> Corporate
@@ -464,7 +464,9 @@ const WonAccountsPage = ({ onBack, userRole }) => {
               </h3>
               <p className="text-3xl font-bold text-gray-900 mt-2">
                 {formatCurrency(
-                  data.totalMKIB + data.totalMKFS + data.totalMKIC
+                  (data?.totalMKIB || 0) +
+                    (data?.totalMKFS || 0) +
+                    (data?.totalMKIC || 0)
                 )}
               </p>
               <p className="text-green-600 mt-1 flex items-center gap-1 text-sm">
@@ -488,50 +490,62 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                     </h2>
                     <TrendingUp className="text-gray-400" />
                   </div>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={sortDataByMonth(data.yearComparison)}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                        <XAxis
-                          dataKey="month"
-                          tick={{ fill: "#6b7280" }}
-                          tickMargin={10}
+                  {data?.yearComparison && data.yearComparison.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={sortDataByMonth(data.yearComparison)}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                          <XAxis
+                            dataKey="month"
+                            tick={{ fill: "#6b7280" }}
+                            tickMargin={10}
+                          />
+                          <YAxis
+                            tick={{ fill: "#6b7280" }}
+                            tickFormatter={(value) => formatCurrency(value)}
+                          />
+                          <Tooltip
+                            formatter={(value) => [
+                              formatCurrency(value),
+                              "Revenue",
+                            ]}
+                            contentStyle={{
+                              background: "rgba(255, 255, 255, 0.96)",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.5rem",
+                            }}
+                          />
+                          <Legend />
+                          <Line
+                            type="monotone"
+                            dataKey="2024"
+                            name="2024"
+                            stroke="#9ca3af"
+                            strokeWidth={2}
+                            dot={{ fill: "#9ca3af", strokeWidth: 2, r: 4 }}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="2025"
+                            name="2025"
+                            stroke="#dc2626"
+                            strokeWidth={2}
+                            dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-80 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <TrendingUp
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
                         />
-                        <YAxis
-                          tick={{ fill: "#6b7280" }}
-                          tickFormatter={(value) => formatCurrency(value)}
-                        />
-                        <Tooltip
-                          formatter={(value) => [
-                            formatCurrency(value),
-                            "Revenue",
-                          ]}
-                          contentStyle={{
-                            background: "rgba(255, 255, 255, 0.96)",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "0.5rem",
-                          }}
-                        />
-                        <Legend />
-                        <Line
-                          type="monotone"
-                          dataKey="2024"
-                          name="2024"
-                          stroke="#9ca3af"
-                          strokeWidth={2}
-                          dot={{ fill: "#9ca3af", strokeWidth: 2, r: 4 }}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="2025"
-                          name="2025"
-                          stroke="#dc2626"
-                          strokeWidth={2}
-                          dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
+                        <p>No year comparison data available</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Won by Premium Band */}
