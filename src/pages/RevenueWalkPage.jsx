@@ -416,206 +416,206 @@ const RevenueWalkPage = ({ onBack }) => {
         <div>
           {/* Section 1: Headline Numbers */}
           <section className="mb-8">
-              <h2
-                className="text-2xl font-bold mb-6 flex items-center"
-                style={{ color: COLORS.text }}
+            <h2
+              className="text-2xl font-bold mb-6 flex items-center"
+              style={{ color: COLORS.text }}
+            >
+              <Target className="mr-2" style={{ color: COLORS.primary }} />{" "}
+              Headline Numbers
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* New Business Card */}
+              <div
+                className="rounded-2xl shadow-sm border p-6"
+                style={{
+                  backgroundColor: COLORS.card,
+                  borderColor: "#E2E8F0",
+                }}
               >
-                <Target className="mr-2" style={{ color: COLORS.primary }} />{" "}
-                Headline Numbers
-              </h2>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* New Business Card */}
-                <div
-                  className="rounded-2xl shadow-sm border p-6"
-                  style={{
-                    backgroundColor: COLORS.card,
-                    borderColor: "#E2E8F0",
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3
-                      className="text-xl font-bold flex items-center"
-                      style={{ color: COLORS.success }}
-                    >
-                      <TrendingUp className="mr-2" /> New Business
-                    </h3>
-                    <div
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={{ backgroundColor: "#D1FAE5", color: "#065F46" }}
-                    >
-                      Jan-Sept Cumulative
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#F0F9FF" }}
-                    >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKIB
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.secondary }}
-                      >
-                        {formatCurrency(headlineNumbers?.newBusiness.mkib)}
-                      </div>
-                    </div>
-                    <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#F0FDF4" }}
-                    >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKFS
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.success }}
-                      >
-                        {formatCurrency(headlineNumbers?.newBusiness.mkfs)}
-                      </div>
-                    </div>
-                    <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#FEF7CD" }}
-                    >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKC
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.warning }}
-                      >
-                        {formatCurrency(headlineNumbers?.newBusiness.mkic)}
-                      </div>
-                    </div>
-                    <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#EFF6FF" }}
-                    >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        Total
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.primary }}
-                      >
-                        {formatCurrency(headlineNumbers?.newBusiness.total)}
-                      </div>
-                    </div>
+                <div className="flex items-center justify-between mb-6">
+                  <h3
+                    className="text-xl font-bold flex items-center"
+                    style={{ color: COLORS.success }}
+                  >
+                    <TrendingUp className="mr-2" /> New Business
+                  </h3>
+                  <div
+                    className="px-3 py-1 rounded-full text-sm font-medium"
+                    style={{ backgroundColor: "#D1FAE5", color: "#065F46" }}
+                  >
+                    Jan-Sept Cumulative
                   </div>
                 </div>
 
-                {/* Lost Business Card */}
-                <div
-                  className="rounded-2xl shadow-sm border p-6"
-                  style={{
-                    backgroundColor: COLORS.card,
-                    borderColor: "#E2E8F0",
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3
-                      className="text-xl font-bold flex items-center"
-                      style={{ color: COLORS.error }}
-                    >
-                      <TrendingDown className="mr-2" /> Lost Business
-                    </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#F0F9FF" }}
+                  >
                     <div
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={{ backgroundColor: "#FEE2E2", color: "#991B1B" }}
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
                     >
-                      Jan-Sept Cumulative
+                      MKIB
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.secondary }}
+                    >
+                      {formatCurrency(headlineNumbers?.newBusiness.mkib)}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#F0FDF4" }}
+                  >
                     <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#FEF2F2" }}
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
                     >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKIB
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.error }}
-                      >
-                        {formatCurrency(headlineNumbers?.lostBusiness.mkib)}
-                      </div>
+                      MKFS
                     </div>
                     <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#FEF2F2" }}
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.success }}
                     >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKFS
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.error }}
-                      >
-                        {formatCurrency(headlineNumbers?.lostBusiness.mkfs)}
-                      </div>
+                      {formatCurrency(headlineNumbers?.newBusiness.mkfs)}
+                    </div>
+                  </div>
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#FEF7CD" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      MKC
                     </div>
                     <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#FEF2F2" }}
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.warning }}
                     >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        MKC
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.error }}
-                      >
-                        {formatCurrency(headlineNumbers?.lostBusiness.mkic)}
-                      </div>
+                      {formatCurrency(headlineNumbers?.newBusiness.mkic)}
+                    </div>
+                  </div>
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#EFF6FF" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      Total
                     </div>
                     <div
-                      className="text-center p-4 rounded-lg"
-                      style={{ backgroundColor: "#FEF2F2" }}
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.primary }}
                     >
-                      <div
-                        className="text-sm font-medium mb-1"
-                        style={{ color: COLORS.textLight }}
-                      >
-                        Total
-                      </div>
-                      <div
-                        className="text-2xl font-bold"
-                        style={{ color: COLORS.error }}
-                      >
-                        {formatCurrency(headlineNumbers?.lostBusiness.total)}
-                      </div>
+                      {formatCurrency(headlineNumbers?.newBusiness.total)}
                     </div>
                   </div>
                 </div>
               </div>
-            </section>
+
+              {/* Lost Business Card */}
+              <div
+                className="rounded-2xl shadow-sm border p-6"
+                style={{
+                  backgroundColor: COLORS.card,
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3
+                    className="text-xl font-bold flex items-center"
+                    style={{ color: COLORS.error }}
+                  >
+                    <TrendingDown className="mr-2" /> Lost Business
+                  </h3>
+                  <div
+                    className="px-3 py-1 rounded-full text-sm font-medium"
+                    style={{ backgroundColor: "#FEE2E2", color: "#991B1B" }}
+                  >
+                    Jan-Sept Cumulative
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#FEF2F2" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      MKIB
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.error }}
+                    >
+                      {formatCurrency(headlineNumbers?.lostBusiness.mkib)}
+                    </div>
+                  </div>
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#FEF2F2" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      MKFS
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.error }}
+                    >
+                      {formatCurrency(headlineNumbers?.lostBusiness.mkfs)}
+                    </div>
+                  </div>
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#FEF2F2" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      MKC
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.error }}
+                    >
+                      {formatCurrency(headlineNumbers?.lostBusiness.mkic)}
+                    </div>
+                  </div>
+                  <div
+                    className="text-center p-4 rounded-lg"
+                    style={{ backgroundColor: "#FEF2F2" }}
+                  >
+                    <div
+                      className="text-sm font-medium mb-1"
+                      style={{ color: COLORS.textLight }}
+                    >
+                      Total
+                    </div>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: COLORS.error }}
+                    >
+                      {formatCurrency(headlineNumbers?.lostBusiness.total)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* Revenue Walk Overview Section */}
           <section className="space-y-6">
