@@ -96,6 +96,8 @@ const WonAccountsPage = ({ onBack, userRole }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [currentPage, setCurrentPage] = useState(1);
   const [detailsYearFilter, setDetailsYearFilter] = useState("all");
+  const [newBusinessData, setNewBusinessData] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const itemsPerPage = 10;
 
   // Check if user is admin
@@ -114,6 +116,22 @@ const WonAccountsPage = ({ onBack, userRole }) => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchNewBusinessData = async (month) => {
+    try {
+      const response = await fetch(
+        API_URL + `/api/won-accounts/new-structure?month=${month}`
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const result = await response.json();
+
+      if (result.error) throw new Error(result.error);
+      setNewBusinessData(result);
+    } catch (err) {
+      console.error("Error fetching new business data:", err.message);
     }
   };
 
@@ -252,7 +270,8 @@ const WonAccountsPage = ({ onBack, userRole }) => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    fetchNewBusinessData(selectedMonth);
+  }, [selectedMonth]);
 
   if (loading)
     return (
@@ -685,124 +704,6 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   )}
                 </div>
               </div>
-
-              {/* New Business Breakdown Section */}
-              <div className="mt-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                  <TrendingUp className="mr-2 text-green-600" /> New Business
-                  Breakdown
-                </h2>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-6">
-                    Division Performance
-                  </h3>
-
-                  {/* Division Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr style={{ backgroundColor: "#F8FAFC" }}>
-                          <th className="text-left p-4 font-semibold text-gray-800">
-                            Division
-                          </th>
-                          <th className="text-right p-4 font-semibold text-gray-800">
-                            2025 Revenue
-                          </th>
-                          <th className="text-right p-4 font-semibold text-gray-800">
-                            2024 Revenue
-                          </th>
-                          <th className="text-right p-4 font-semibold text-gray-800">
-                            YoY Growth
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {data.wonAccountsByDivision &&
-                          data.wonAccountsByDivision.map((division, index) => {
-                            const growth2024 =
-                              data.wonAccountsByDivision2024?.find(
-                                (d) => d.name === division.name
-                              );
-                            const revenue2024 = growth2024?.totalRevenue || 0;
-                            const yoyGrowth =
-                              revenue2024 > 0
-                                ? (division.totalRevenue - revenue2024) /
-                                  revenue2024
-                                : 0;
-
-                            return (
-                              <tr
-                                key={index}
-                                className="border-b border-gray-100"
-                              >
-                                <td className="p-4 font-medium text-gray-800">
-                                  {division.name}
-                                </td>
-                                <td className="p-4 text-right font-bold text-green-600">
-                                  {formatCurrency(division.totalRevenue)}
-                                </td>
-                                <td className="p-4 text-right text-gray-600">
-                                  {formatCurrency(revenue2024)}
-                                </td>
-                                <td className="p-4 text-right">
-                                  <span
-                                    className={`font-bold ${yoyGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
-                                  >
-                                    {formatPercentage(yoyGrowth)}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* New Business Chart */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-800 mb-6">
-                    New Business Trend
-                  </h3>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={data.wonAccountsByDivision || []}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                        <XAxis
-                          dataKey="name"
-                          angle={-45}
-                          textAnchor="end"
-                          height={100}
-                          tick={{ fill: "#6b7280" }}
-                        />
-                        <YAxis
-                          tick={{ fill: "#6b7280" }}
-                          tickFormatter={(value) => formatCurrency(value)}
-                        />
-                        <Tooltip
-                          formatter={(value) => [
-                            formatCurrency(value),
-                            "Revenue",
-                          ]}
-                          contentStyle={{
-                            background: "rgba(255, 255, 255, 0.96)",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "0.5rem",
-                          }}
-                        />
-                        <Legend />
-                        <Bar
-                          dataKey="totalRevenue"
-                          name="2025 Revenue"
-                          fill="#059669"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -920,6 +821,176 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   )}
                 </div>
               </div>
+
+              {/* New Business Breakdown Section */}
+              <div className="mt-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                    <TrendingUp className="mr-2 text-green-600" /> New Business
+                    Breakdown
+                  </h2>
+                  {/* Month Selector */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Select Month:
+                    </label>
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) =>
+                        setSelectedMonth(parseInt(e.target.value))
+                      }
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      {[
+                        "January",
+                        "February",
+                        "March",
+                        "April",
+                        "May",
+                        "June",
+                        "July",
+                        "August",
+                        "September",
+                        "October",
+                        "November",
+                        "December",
+                      ].map((month, index) => (
+                        <option key={index} value={index + 1}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6">
+                    Division Performance
+                  </h3>
+
+                  {/* Division Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ backgroundColor: "#F8FAFC" }}>
+                          <th className="text-left p-4 font-semibold text-gray-800">
+                            Division
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            2025 Revenue
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            2024 Revenue
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            YoY Growth
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {newBusinessData?.divisions &&
+                        newBusinessData.divisions.length > 0 ? (
+                          newBusinessData.divisions.map((division, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100"
+                            >
+                              <td className="p-4 font-medium text-gray-800">
+                                {division.name}
+                              </td>
+                              <td className="p-4 text-right font-bold text-green-600">
+                                {formatCurrency(division.newBusiness2025)}
+                              </td>
+                              <td className="p-4 text-right text-gray-600">
+                                {formatCurrency(division.newBusiness2024)}
+                              </td>
+                              <td className="p-4 text-right">
+                                <span
+                                  className={`font-bold ${
+                                    division.newBusinessYoy >= 0
+                                      ? "text-green-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {formatPercentage(division.newBusinessYoy)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan="4"
+                              className="p-4 text-center text-gray-500"
+                            >
+                              No division data available for selected month
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* New Business Chart */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6">
+                    New Business Trend
+                  </h3>
+                  {newBusinessData?.divisions &&
+                  newBusinessData.divisions.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={newBusinessData.divisions}>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#E2E8F0"
+                          />
+                          <XAxis
+                            dataKey="name"
+                            angle={-45}
+                            textAnchor="end"
+                            height={100}
+                            tick={{ fill: "#6b7280" }}
+                          />
+                          <YAxis
+                            tick={{ fill: "#6b7280" }}
+                            tickFormatter={(value) => formatCurrency(value)}
+                          />
+                          <Tooltip
+                            formatter={(value) => [
+                              formatCurrency(value),
+                              "Revenue",
+                            ]}
+                            contentStyle={{
+                              background: "rgba(255, 255, 255, 0.96)",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.5rem",
+                            }}
+                          />
+                          <Legend />
+                          <Bar
+                            dataKey="newBusiness2025"
+                            name="2025 Revenue"
+                            fill="#059669"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-80 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <BarChart3
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
+                        />
+                        <p>No new business data available for selected month</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1003,7 +1074,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             </div>
           )}
 
-          {activeTab === "comparison" && (
+          {activeTab === "YOY comparison" && (
             <div className="space-y-6">
               {/* Year-over-Year Comparison Card */}
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -1098,16 +1169,41 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                         <p className="text-sm text-gray-600 mb-2">
                           Average Account Value Change
                         </p>
-                        <p className="text-xl font-bold text-gray-700">
+                        <p
+                          className={`text-xl font-bold ${
+                            data.yoyComparison.currentYear.accounts > 0 &&
+                            data.yoyComparison.lastYear.accounts > 0
+                              ? data.yoyComparison.currentYear.revenue /
+                                  data.yoyComparison.currentYear.accounts /
+                                  (data.yoyComparison.lastYear.revenue /
+                                    data.yoyComparison.lastYear.accounts) -
+                                  1 >=
+                                0
+                                ? "text-green-600"
+                                : "text-red-600"
+                              : "text-gray-600"
+                          }`}
+                        >
                           {data.yoyComparison.currentYear.accounts > 0 &&
                           data.yoyComparison.lastYear.accounts > 0
-                            ? formatPercentage(
+                            ? `${formatPercentage(
+                                Math.abs(
+                                  data.yoyComparison.currentYear.revenue /
+                                    data.yoyComparison.currentYear.accounts /
+                                    (data.yoyComparison.lastYear.revenue /
+                                      data.yoyComparison.lastYear.accounts) -
+                                    1
+                                )
+                              )} ${
                                 data.yoyComparison.currentYear.revenue /
                                   data.yoyComparison.currentYear.accounts /
                                   (data.yoyComparison.lastYear.revenue /
                                     data.yoyComparison.lastYear.accounts) -
-                                  1
-                              )
+                                  1 >=
+                                0
+                                  ? "▲"
+                                  : "▼"
+                              }`
                             : "N/A"}
                         </p>
                       </div>
