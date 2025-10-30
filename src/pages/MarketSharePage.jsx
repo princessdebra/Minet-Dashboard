@@ -331,7 +331,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
         {/* Overall Key Metrics (All Terms - Q2 2025) */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">
-            Overall Performance - All Terms (Q2 2025)
+            Overall Performance (Q2 2025)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -766,7 +766,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                           <span className="text-sm font-bold text-gray-900">
                             {item.minet_market_share_current_year
                               ? formatPercentage(
-                                  item.minet_market_share_current_year * 100
+                                  item.minet_market_share_current_year
                                 )
                               : "N/A"}
                           </span>
@@ -783,8 +783,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-green-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous_market_share *
-                                        100
+                                      item.percent_change_current_previous_market_share
                                     )}
                                   </span>
                                 </>
@@ -796,8 +795,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-red-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous_market_share *
-                                        100
+                                      item.percent_change_current_previous_market_share
                                     )}
                                   </span>
                                 </>
@@ -828,8 +826,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-green-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous_premiums *
-                                        100
+                                      item.percent_change_current_previous_premiums
                                     )}
                                   </span>
                                 </>
@@ -841,8 +838,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-red-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous_premiums *
-                                        100
+                                      item.percent_change_current_previous_premiums
                                     )}
                                   </span>
                                 </>
@@ -872,7 +868,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-green-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous * 100
+                                      item.percent_change_current_previous
                                     )}
                                   </span>
                                 </>
@@ -884,7 +880,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                                   />
                                   <span className="text-sm font-medium text-red-600">
                                     {formatPercentage(
-                                      item.percent_change_current_previous * 100
+                                      item.percent_change_current_previous
                                     )}
                                   </span>
                                 </>
@@ -960,19 +956,39 @@ const MarketSharePage = ({ onBack, userRole }) => {
                   </h2>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData?.marketShareByProductLine}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={120}
-                          fill="#8884d8"
+                      <BarChart
+                        data={chartData?.marketShareByProductLine}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="name"
+                          angle={-45}
+                          textAnchor="end"
+                          height={70}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis
+                          tickFormatter={(value) => `${value.toFixed(1)}%`}
+                          width={60}
+                        />
+                        <Tooltip
+                          formatter={(value) => [
+                            `${value.toFixed(2)}%`,
+                            "Market Share",
+                          ]}
+                          contentStyle={{
+                            backgroundColor: "#fff",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
                           dataKey="value"
-                          nameKey="name"
-                          label={({ name, percent }) =>
-                            `${name}: ${(percent * 100).toFixed(1)}%`
-                          }
+                          name="Market Share"
+                          radius={[4, 4, 0, 0]}
                         >
                           {chartData?.marketShareByProductLine?.map(
                             (entry, index) => (
@@ -982,25 +998,8 @@ const MarketSharePage = ({ onBack, userRole }) => {
                               />
                             )
                           )}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value) => [`${value}%`, "Market Share"]}
-                          contentStyle={{
-                            backgroundColor: "#fff",
-                            border: "1px solid #e0e0e0",
-                            borderRadius: "8px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                          }}
-                        />
-                        <Legend
-                          layout="vertical"
-                          verticalAlign="middle"
-                          align="right"
-                          wrapperStyle={{
-                            paddingLeft: "20px",
-                          }}
-                        />
-                      </PieChart>
+                        </Bar>
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
                   <p className="text-sm text-gray-500 mt-4 text-center">
@@ -1025,7 +1024,7 @@ const MarketSharePage = ({ onBack, userRole }) => {
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                         <XAxis
                           type="number"
-                          tickFormatter={(value) => `${value}%`}
+                          tickFormatter={(value) => `${value.toFixed(2)}%`}
                         />
                         <YAxis
                           dataKey="category"
@@ -1034,7 +1033,10 @@ const MarketSharePage = ({ onBack, userRole }) => {
                           tick={{ fontSize: 12 }}
                         />
                         <Tooltip
-                          formatter={(value) => [`${value}%`, "Growth"]}
+                          formatter={(value) => [
+                            `${value.toFixed(2)}%`,
+                            "Growth",
+                          ]}
                           contentStyle={{
                             backgroundColor: "#fff",
                             border: "1px solid #e0e0e0",
