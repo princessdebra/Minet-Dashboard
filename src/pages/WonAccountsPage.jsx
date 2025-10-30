@@ -691,7 +691,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                             <div
                               className="h-2 rounded-full transition-all duration-500 ease-out"
                               style={{
-                                width: `${(segment.accountsWon / Math.max(...data.marketSegmentAnalysis.map((s) => s.accountsWon))) * 100}%`,
+                                width: `${(segment.accountsWon / Math.max(...(data.marketSegmentAnalysis?.map((s) => s.accountsWon) || [1]))) * 100}%`,
                                 backgroundColor:
                                   COLORS_BRAND[index % COLORS_BRAND.length],
                               }}
