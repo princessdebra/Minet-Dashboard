@@ -15,6 +15,7 @@ import {
   Legend,
   LineChart,
   Line,
+  ComposedChart,
 } from "recharts";
 import {
   MapPin,
@@ -293,6 +294,17 @@ const WonAccountsPage = ({ onBack, userRole }) => {
     (a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month)
   );
 
+  // Merge monthly amounts with accounts won for combo chart
+  const mergedMonthlyData = sortedMonthlyAmounts.map((monthData) => {
+    const accountsData = sortedWonAccountsByMonth.find(
+      (acc) => acc.month === monthData.month
+    );
+    return {
+      ...monthData,
+      accountsWon: accountsData?.accountsWon || 0,
+    };
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -323,7 +335,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
               "overview",
               "monthly",
               "competitors",
-              "comparison",
+              "YOY comparison",
               "details",
             ].map((tab) => (
               <button
@@ -502,52 +514,64 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                     </h2>
                     <BarChart3 className="text-gray-400" />
                   </div>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.wonByPremiumBand}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                          nameKey="band"
-                          label={({ band, percent }) =>
-                            `${band}: ${(percent * 100).toFixed(0)}%`
-                          }
-                          labelLine={false}
-                        >
-                          {data.wonByPremiumBand.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS_PIE[index % COLORS_PIE.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value, name) => [
-                            `${value} accounts`,
-                            name,
-                          ]}
-                          contentStyle={{
-                            background: "rgba(255, 255, 255, 0.96)",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "0.5rem",
-                          }}
+                  {data.wonByPremiumBand && data.wonByPremiumBand.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={data.wonByPremiumBand}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            dataKey="value"
+                            nameKey="band"
+                            label={({ band, percent }) =>
+                              `${band}: ${(percent * 100).toFixed(0)}%`
+                            }
+                            labelLine={false}
+                          >
+                            {data.wonByPremiumBand.map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={COLORS_PIE[index % COLORS_PIE.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value, name) => [
+                              `${value} accounts`,
+                              name,
+                            ]}
+                            contentStyle={{
+                              background: "rgba(255, 255, 255, 0.96)",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.5rem",
+                            }}
+                          />
+                          <Legend
+                            layout="vertical"
+                            verticalAlign="middle"
+                            align="right"
+                            wrapperStyle={{
+                              paddingLeft: "20px",
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-80 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <BarChart3
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
                         />
-                        <Legend
-                          layout="vertical"
-                          verticalAlign="middle"
-                          align="right"
-                          wrapperStyle={{
-                            paddingLeft: "20px",
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
+                        <p>No income band data available</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -558,44 +582,57 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Top Underwriters
                   </h2>
-                  <div className="space-y-3">
-                    {data.underwriterPerformance.map((uw, index) => (
-                      <div
-                        key={uw.name}
-                        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                              index === 0
-                                ? "bg-yellow-500"
-                                : index === 1
-                                  ? "bg-gray-400"
-                                  : index === 2
-                                    ? "bg-orange-600"
-                                    : "bg-gray-300"
-                            }`}
-                          >
-                            {index + 1}
+                  {data.underwriterPerformance &&
+                  data.underwriterPerformance.length > 0 ? (
+                    <div className="space-y-3">
+                      {data.underwriterPerformance.map((uw, index) => (
+                        <div
+                          key={uw.name}
+                          className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                                index === 0
+                                  ? "bg-yellow-500"
+                                  : index === 1
+                                    ? "bg-gray-400"
+                                    : index === 2
+                                      ? "bg-orange-600"
+                                      : "bg-gray-300"
+                              }`}
+                            >
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {uw.name || "Unknown"}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {uw.accountsWon} accounts
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {uw.name || "Unknown"}
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900">
+                              {formatCurrency(uw.revenueGenerated)}
                             </p>
-                            <p className="text-sm text-gray-500">
-                              {uw.accountsWon} accounts
-                            </p>
+                            <p className="text-sm text-green-600">Revenue</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">
-                            {formatCurrency(uw.revenueGenerated)}
-                          </p>
-                          <p className="text-sm text-green-600">Revenue</p>
-                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-40 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <Users
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
+                        />
+                        <p>No underwriter data available</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Market Segments */}
@@ -603,34 +640,166 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Market Segments
                   </h2>
-                  <div className="space-y-4">
-                    {data.marketSegmentAnalysis.map((segment, index) => (
-                      <div key={segment.segment} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium text-gray-700">
-                            {segment.segment}
-                          </span>
-                          <div className="text-right">
-                            <span className="text-gray-900 font-semibold">
-                              {segment.accountsWon} accounts
+                  {data.marketSegmentAnalysis &&
+                  data.marketSegmentAnalysis.length > 0 ? (
+                    <div className="space-y-4">
+                      {data.marketSegmentAnalysis.map((segment, index) => (
+                        <div key={segment.segment} className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-gray-700">
+                              {segment.segment}
                             </span>
-                            <span className="text-gray-600 text-xs ml-2">
-                              ({formatCurrency(segment.revenueGenerated || 0)})
-                            </span>
+                            <div className="text-right">
+                              <span className="text-gray-900 font-semibold">
+                                {segment.accountsWon} accounts
+                              </span>
+                              <span className="text-gray-600 text-xs ml-2">
+                                ({formatCurrency(segment.revenueGenerated || 0)}
+                                )
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="h-2 rounded-full transition-all duration-500 ease-out"
+                              style={{
+                                width: `${(segment.accountsWon / Math.max(...data.marketSegmentAnalysis.map((s) => s.accountsWon))) * 100}%`,
+                                backgroundColor:
+                                  COLORS_BRAND[index % COLORS_BRAND.length],
+                              }}
+                            ></div>
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="h-2 rounded-full transition-all duration-500 ease-out"
-                            style={{
-                              width: `${(segment.accountsWon / Math.max(...data.marketSegmentAnalysis.map((s) => s.accountsWon))) * 100}%`,
-                              backgroundColor:
-                                COLORS_BRAND[index % COLORS_BRAND.length],
-                            }}
-                          ></div>
-                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-40 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <Briefcase
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
+                        />
+                        <p>No market segment data available</p>
                       </div>
-                    ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* New Business Breakdown Section */}
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                  <TrendingUp className="mr-2 text-green-600" /> New Business
+                  Breakdown
+                </h2>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6">
+                    Division Performance
+                  </h3>
+
+                  {/* Division Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ backgroundColor: "#F8FAFC" }}>
+                          <th className="text-left p-4 font-semibold text-gray-800">
+                            Division
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            2025 Revenue
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            2024 Revenue
+                          </th>
+                          <th className="text-right p-4 font-semibold text-gray-800">
+                            YoY Growth
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.wonAccountsByDivision &&
+                          data.wonAccountsByDivision.map((division, index) => {
+                            const growth2024 =
+                              data.wonAccountsByDivision2024?.find(
+                                (d) => d.name === division.name
+                              );
+                            const revenue2024 = growth2024?.totalRevenue || 0;
+                            const yoyGrowth =
+                              revenue2024 > 0
+                                ? (division.totalRevenue - revenue2024) /
+                                  revenue2024
+                                : 0;
+
+                            return (
+                              <tr
+                                key={index}
+                                className="border-b border-gray-100"
+                              >
+                                <td className="p-4 font-medium text-gray-800">
+                                  {division.name}
+                                </td>
+                                <td className="p-4 text-right font-bold text-green-600">
+                                  {formatCurrency(division.totalRevenue)}
+                                </td>
+                                <td className="p-4 text-right text-gray-600">
+                                  {formatCurrency(revenue2024)}
+                                </td>
+                                <td className="p-4 text-right">
+                                  <span
+                                    className={`font-bold ${yoyGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
+                                  >
+                                    {formatPercentage(yoyGrowth)}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* New Business Chart */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-800 mb-6">
+                    New Business Trend
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={data.wonAccountsByDivision || []}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                        <XAxis
+                          dataKey="name"
+                          angle={-45}
+                          textAnchor="end"
+                          height={100}
+                          tick={{ fill: "#6b7280" }}
+                        />
+                        <YAxis
+                          tick={{ fill: "#6b7280" }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                        />
+                        <Tooltip
+                          formatter={(value) => [
+                            formatCurrency(value),
+                            "Revenue",
+                          ]}
+                          contentStyle={{
+                            background: "rgba(255, 255, 255, 0.96)",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="totalRevenue"
+                          name="2025 Revenue"
+                          fill="#059669"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>
@@ -691,51 +860,64 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                     </h2>
                     <Briefcase className="text-gray-400" />
                   </div>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={data.topClientSegments}
-                        layout="vertical"
-                        margin={{ left: 100 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          opacity={0.2}
-                          horizontal={false}
+                  {data.topClientSegments &&
+                  data.topClientSegments.length > 0 ? (
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={data.topClientSegments}
+                          layout="vertical"
+                          margin={{ left: 100 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            opacity={0.2}
+                            horizontal={false}
+                          />
+                          <XAxis
+                            type="number"
+                            tick={{ fill: "#6b7280" }}
+                            tickFormatter={(value) => value.toLocaleString()}
+                          />
+                          <YAxis
+                            type="category"
+                            dataKey="segment"
+                            tick={{ fill: "#6b7280" }}
+                            width={90}
+                          />
+                          <Tooltip
+                            formatter={(value, name) => [
+                              name === "wonAccounts"
+                                ? `${value} accounts`
+                                : formatCurrency(value),
+                              name === "wonAccounts" ? "Accounts" : "Revenue",
+                            ]}
+                            contentStyle={{
+                              background: "rgba(255, 255, 255, 0.96)",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.5rem",
+                            }}
+                          />
+                          <Bar
+                            dataKey="wonAccounts"
+                            name="wonAccounts"
+                            fill="#dc2626"
+                            radius={[0, 4, 4, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-80 flex items-center justify-center text-gray-500">
+                      <div className="text-center">
+                        <Briefcase
+                          size={48}
+                          className="mx-auto mb-4 text-gray-300"
                         />
-                        <XAxis
-                          type="number"
-                          tick={{ fill: "#6b7280" }}
-                          tickFormatter={(value) => value.toLocaleString()}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="segment"
-                          tick={{ fill: "#6b7280" }}
-                          width={90}
-                        />
-                        <Tooltip
-                          formatter={(value, name) => [
-                            name === "wonAccounts"
-                              ? `${value} accounts`
-                              : formatCurrency(value),
-                            name === "wonAccounts" ? "Accounts" : "Revenue",
-                          ]}
-                          contentStyle={{
-                            background: "rgba(255, 255, 255, 0.96)",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "0.5rem",
-                          }}
-                        />
-                        <Bar
-                          dataKey="wonAccounts"
-                          name="wonAccounts"
-                          fill="#dc2626"
-                          radius={[0, 4, 4, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
+                        <p>No division data available</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -750,60 +932,73 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   </h2>
                   <Target className="text-gray-400" />
                 </div>
-                <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={data.competitorAnalysis}
-                      layout="vertical"
-                      margin={{ left: 150, right: 20 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        opacity={0.2}
-                        horizontal={false}
+                {data.competitorAnalysis &&
+                data.competitorAnalysis.length > 0 ? (
+                  <div className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={data.competitorAnalysis}
+                        layout="vertical"
+                        margin={{ left: 150, right: 20 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          opacity={0.2}
+                          horizontal={false}
+                        />
+                        <XAxis
+                          type="number"
+                          tick={{ fill: "#6b7280" }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="competitor"
+                          tick={{ fill: "#6b7280" }}
+                          width={140}
+                        />
+                        <Tooltip
+                          formatter={(value, name) => {
+                            // name is the display name from the Bar component
+                            if (name === "Amount Won") {
+                              return [formatCurrency(value), "Amount Won"];
+                            } else {
+                              return [`${value} accounts`, "Accounts Won"];
+                            }
+                          }}
+                          contentStyle={{
+                            background: "rgba(255, 255, 255, 0.96)",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="amountWon"
+                          name="Amount Won"
+                          fill="#dc2626"
+                          radius={[0, 4, 4, 0]}
+                        />
+                        <Bar
+                          dataKey="accountsWon"
+                          name="Accounts Won"
+                          fill="#f87171"
+                          radius={[0, 4, 4, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-96 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <Target
+                        size={48}
+                        className="mx-auto mb-4 text-gray-300"
                       />
-                      <XAxis
-                        type="number"
-                        tick={{ fill: "#6b7280" }}
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
-                      <YAxis
-                        type="category"
-                        dataKey="competitor"
-                        tick={{ fill: "#6b7280" }}
-                        width={140}
-                      />
-                      <Tooltip
-                        formatter={(value, name) => {
-                          // name is the display name from the Bar component
-                          if (name === "Amount Won") {
-                            return [formatCurrency(value), "Amount Won"];
-                          } else {
-                            return [`${value} accounts`, "Accounts Won"];
-                          }
-                        }}
-                        contentStyle={{
-                          background: "rgba(255, 255, 255, 0.96)",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "0.5rem",
-                        }}
-                      />
-                      <Legend />
-                      <Bar
-                        dataKey="amountWon"
-                        name="Amount Won"
-                        fill="#dc2626"
-                        radius={[0, 4, 4, 0]}
-                      />
-                      <Bar
-                        dataKey="accountsWon"
-                        name="Accounts Won"
-                        fill="#f87171"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                      <p>No competitor data available</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -978,6 +1173,92 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
+              </div>
+
+              {/* Combo Chart: Amount Won (Left Axis) and Accounts Won (Right Axis) */}
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Revenue & Accounts Won by Month (2025)
+                  </h2>
+                  <BarChart3 className="text-gray-400" />
+                </div>
+                {mergedMonthlyData && mergedMonthlyData.length > 0 ? (
+                  <div className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={mergedMonthlyData}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis
+                          dataKey="month"
+                          tick={{ fill: "#6b7280" }}
+                          tickMargin={10}
+                        />
+                        <YAxis
+                          yAxisId="left"
+                          tick={{ fill: "#6b7280" }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                          label={{
+                            value: "Amount Won",
+                            angle: -90,
+                            position: "insideLeft",
+                            style: { fill: "#6b7280" },
+                          }}
+                        />
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          tick={{ fill: "#6b7280" }}
+                          label={{
+                            value: "Accounts Won",
+                            angle: 90,
+                            position: "insideRight",
+                            style: { fill: "#6b7280" },
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value, name) => {
+                            if (name === "Amount Won") {
+                              return [formatCurrency(value), name];
+                            }
+                            return [value, name];
+                          }}
+                          contentStyle={{
+                            background: "rgba(255, 255, 255, 0.96)",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                        <Legend />
+                        <Bar
+                          yAxisId="left"
+                          dataKey="totalAmount"
+                          name="Amount Won"
+                          fill="#dc2626"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Line
+                          yAxisId="right"
+                          type="monotone"
+                          dataKey="accountsWon"
+                          name="Accounts Won"
+                          stroke="#059669"
+                          strokeWidth={3}
+                          dot={{ fill: "#059669", strokeWidth: 2, r: 5 }}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-96 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <BarChart3
+                        size={48}
+                        className="mx-auto mb-4 text-gray-300"
+                      />
+                      <p>No monthly data available</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
