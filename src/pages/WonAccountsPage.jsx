@@ -111,6 +111,9 @@ const WonAccountsPage = ({ onBack, userRole }) => {
       const result = await response.json();
 
       if (result.error) throw new Error(result.error);
+      console.log("Won Accounts Data:", result);
+      console.log("YOY Comparison:", result.yoyComparison);
+      console.log("Year Comparison:", result.yearComparison);
       setData(result);
     } catch (err) {
       setError(err.message);
@@ -1090,7 +1093,9 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   </h2>
                   <Target size={20} className="text-gray-400" />
                 </div>
-                {data.yoyComparison ? (
+                {data.yoyComparison &&
+                data.yoyComparison.currentYear &&
+                data.yoyComparison.lastYear ? (
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="text-center p-6 bg-green-50 rounded-lg border border-green-100">
@@ -1231,50 +1236,62 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   </h2>
                   <TrendingUp className="text-gray-400" />
                 </div>
-                <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={sortDataByMonth(data.yearComparison)}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                      <XAxis
-                        dataKey="month"
-                        tick={{ fill: "#6b7280" }}
-                        tickMargin={10}
+                {data.yearComparison && data.yearComparison.length > 0 ? (
+                  <div className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={sortDataByMonth(data.yearComparison)}>
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                        <XAxis
+                          dataKey="month"
+                          tick={{ fill: "#6b7280" }}
+                          tickMargin={10}
+                        />
+                        <YAxis
+                          tick={{ fill: "#6b7280" }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                        />
+                        <Tooltip
+                          formatter={(value) => [
+                            formatCurrency(value),
+                            "Revenue",
+                          ]}
+                          contentStyle={{
+                            background: "rgba(255, 255, 255, 0.96)",
+                            border: "1px solid #e5e7eb",
+                            borderRadius: "0.5rem",
+                          }}
+                        />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="2024"
+                          name="2024"
+                          stroke="#9ca3af"
+                          strokeWidth={2}
+                          dot={{ fill: "#9ca3af", strokeWidth: 2, r: 4 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="2025"
+                          name="2025"
+                          stroke="#dc2626"
+                          strokeWidth={2}
+                          dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-96 flex items-center justify-center text-gray-500">
+                    <div className="text-center">
+                      <TrendingUp
+                        size={48}
+                        className="mx-auto mb-4 text-gray-300"
                       />
-                      <YAxis
-                        tick={{ fill: "#6b7280" }}
-                        tickFormatter={(value) => formatCurrency(value)}
-                      />
-                      <Tooltip
-                        formatter={(value) => [
-                          formatCurrency(value),
-                          "Revenue",
-                        ]}
-                        contentStyle={{
-                          background: "rgba(255, 255, 255, 0.96)",
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "0.5rem",
-                        }}
-                      />
-                      <Legend />
-                      <Line
-                        type="monotone"
-                        dataKey="2024"
-                        name="2024"
-                        stroke="#9ca3af"
-                        strokeWidth={2}
-                        dot={{ fill: "#9ca3af", strokeWidth: 2, r: 4 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="2025"
-                        name="2025"
-                        stroke="#dc2626"
-                        strokeWidth={2}
-                        dot={{ fill: "#dc2626", strokeWidth: 2, r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+                      <p>No year comparison data available</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Combo Chart: Amount Won (Left Axis) and Accounts Won (Right Axis) */}
