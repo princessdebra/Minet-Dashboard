@@ -93,6 +93,7 @@ const RevenueWalkPage = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState("current-analysis");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(getDefaultMonth());
+  const [selectedDepartment, setSelectedDepartment] = useState("all");
 
   // Get short month name (e.g., "Sept" for September)
   const getShortMonthName = (monthIndex) => {
@@ -249,6 +250,108 @@ const RevenueWalkPage = ({ onBack }) => {
     const totalOutflows =
       revenueData.summaryData.outflowsGrandTotal?.total_outflows || 0;
     return totalInflows + totalOutflows;
+  }, [revenueData]);
+
+  // Get unique departments from the data
+  const departments = useMemo(() => {
+    if (!revenueData?.summaryData?.inflowsByDivision) return [];
+
+    const deptSet = new Set();
+    revenueData.summaryData.inflowsByDivision.forEach((division) => {
+      if (division.department) {
+        deptSet.add(division.department);
+      }
+    });
+    return Array.from(deptSet).sort();
+  }, [revenueData]);
+
+  // Filter divisions by selected department
+  const filteredInflowsByDivision = useMemo(() => {
+    if (!revenueData?.summaryData?.inflowsByDivision) return [];
+    if (selectedDepartment === "all")
+      return revenueData.summaryData.inflowsByDivision;
+
+    return revenueData.summaryData.inflowsByDivision.filter(
+      (division) => division.department === selectedDepartment
+    );
+  }, [revenueData, selectedDepartment]);
+
+  const filteredOutflowsByDivision = useMemo(() => {
+    if (!revenueData?.summaryData?.outflowsByDivision) return [];
+    if (selectedDepartment === "all")
+      return revenueData.summaryData.outflowsByDivision;
+
+    return revenueData.summaryData.outflowsByDivision.filter(
+      (division) => division.department === selectedDepartment
+    );
+  }, [revenueData, selectedDepartment]);
+
+  // Calculate department-level summaries
+  const departmentSummaries = useMemo(() => {
+    if (
+      !revenueData?.summaryData?.inflowsByDivision ||
+      !revenueData?.summaryData?.outflowsByDivision
+    ) {
+      return { inflows: [], outflows: [] };
+    }
+
+    // Group inflows by department
+    const inflowsByDept = {};
+    revenueData.summaryData.inflowsByDivision.forEach((division) => {
+      const dept = division.department || "Unknown";
+      if (!inflowsByDept[dept]) {
+        inflowsByDept[dept] = {
+          department: dept,
+          total_2025_new_new_business: 0,
+          mcs_mfs_2025: 0,
+          organic_growth_2025: 0,
+          sundry_revenue_growth: 0,
+          total_inflows: 0,
+        };
+      }
+      inflowsByDept[dept].total_2025_new_new_business +=
+        division.total_2025_new_new_business || 0;
+      inflowsByDept[dept].mcs_mfs_2025 += division.mcs_mfs_2025 || 0;
+      inflowsByDept[dept].organic_growth_2025 +=
+        division.organic_growth_2025 || 0;
+      inflowsByDept[dept].sundry_revenue_growth +=
+        division.sundry_revenue_growth || 0;
+      inflowsByDept[dept].total_inflows += division.total_inflows || 0;
+    });
+
+    // Group outflows by department
+    const outflowsByDept = {};
+    revenueData.summaryData.outflowsByDivision.forEach((division) => {
+      const dept = division.department || "Unknown";
+      if (!outflowsByDept[dept]) {
+        outflowsByDept[dept] = {
+          department: dept,
+          total_2025_lost_lost_business: 0,
+          add_one_off_accounts: 0,
+          add_mcs_mfs_income_2024: 0,
+          add_2025_revenue_shrinkages: 0,
+          total_outflows: 0,
+        };
+      }
+      outflowsByDept[dept].total_2025_lost_lost_business +=
+        division.total_2025_lost_lost_business || 0;
+      outflowsByDept[dept].add_one_off_accounts +=
+        division.add_one_off_accounts || 0;
+      outflowsByDept[dept].add_mcs_mfs_income_2024 +=
+        division.add_mcs_mfs_income_2024 || 0;
+      outflowsByDept[dept].add_2025_revenue_shrinkages +=
+        division.add_2025_revenue_shrinkages || 0;
+      outflowsByDept[dept].total_outflows += division.total_outflows || 0;
+    });
+
+    return {
+      inflows: Object.values(inflowsByDept).sort((a, b) =>
+        a.department.localeCompare(b.department)
+      ),
+      outflows: Object.values(outflowsByDept).sort((a, b) =>
+        a.department.localeCompare(b.department)
+      ),
+    };
   }, [revenueData]);
 
   // Prepare division data for charts
@@ -975,6 +1078,260 @@ const RevenueWalkPage = ({ onBack }) => {
             {/* Division View */}
             {summaryView === "division" && revenueData?.summaryData && (
               <div className="space-y-6">
+                {/* Department Overview Section */}
+                <div className="space-y-6">
+                  <h3
+                    className="text-2xl font-bold flex items-center"
+                    style={{ color: COLORS.text }}
+                  >
+                    <Building
+                      className="mr-2"
+                      style={{ color: COLORS.primary }}
+                    />
+                    Department Overview
+                  </h3>
+
+                  {/* Department Inflows */}
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h4
+                      className="text-xl font-bold mb-6 flex items-center"
+                      style={{ color: COLORS.success }}
+                    >
+                      <TrendingUp className="mr-2" /> Overall Department Inflows
+                    </h4>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr style={{ backgroundColor: "#F8FAFC" }}>
+                            <th
+                              className="text-left p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Department
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Total New
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              2025 MCS/MFS
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Organic Growth
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Sundry Revenue
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Total Inflows
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {departmentSummaries.inflows.map((dept, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100"
+                            >
+                              <td
+                                className="p-4 font-medium"
+                                style={{ color: COLORS.text }}
+                              >
+                                {dept.department}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(
+                                  dept.total_2025_new_new_business
+                                )}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(dept.mcs_mfs_2025)}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(dept.organic_growth_2025)}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(dept.sundry_revenue_growth)}
+                              </td>
+                              <td
+                                className="p-4 text-right font-bold"
+                                style={{ color: COLORS.success }}
+                              >
+                                {formatCurrency(dept.total_inflows)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Department Outflows */}
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h4
+                      className="text-xl font-bold mb-6 flex items-center"
+                      style={{ color: COLORS.error }}
+                    >
+                      <TrendingDown className="mr-2" /> Overall Department
+                      Outflows
+                    </h4>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr style={{ backgroundColor: "#F8FAFC" }}>
+                            <th
+                              className="text-left p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Department
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Total Lost
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              One Off Accounts
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              MCS/MFS Income
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              2025 Revenue Shrinkages
+                            </th>
+                            <th
+                              className="text-right p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Total Outflows
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {departmentSummaries.outflows.map((dept, index) => (
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100"
+                            >
+                              <td
+                                className="p-4 font-medium"
+                                style={{ color: COLORS.text }}
+                              >
+                                {dept.department}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(
+                                  dept.total_2025_lost_lost_business
+                                )}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(dept.add_one_off_accounts)}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(dept.add_mcs_mfs_income_2024)}
+                              </td>
+                              <td
+                                className="p-4 text-right"
+                                style={{ color: COLORS.text }}
+                              >
+                                {formatCurrency(
+                                  dept.add_2025_revenue_shrinkages
+                                )}
+                              </td>
+                              <td
+                                className="p-4 text-right font-bold"
+                                style={{ color: COLORS.error }}
+                              >
+                                {formatCurrency(dept.total_outflows)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Department Filter */}
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <h4
+                      className="text-lg font-bold"
+                      style={{ color: COLORS.text }}
+                    >
+                      Filter Divisions by Department
+                    </h4>
+                    <div className="flex items-center gap-3">
+                      <label
+                        className="text-sm font-medium"
+                        style={{ color: COLORS.textLight }}
+                      >
+                        Department:
+                      </label>
+                      <select
+                        value={selectedDepartment}
+                        onChange={(e) => setSelectedDepartment(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        style={{ color: COLORS.text }}
+                      >
+                        <option value="all">All Departments</option>
+                        {departments.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Inflows by Division */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                   <h3
@@ -982,6 +1339,14 @@ const RevenueWalkPage = ({ onBack }) => {
                     style={{ color: COLORS.success }}
                   >
                     <TrendingUp className="mr-2" /> Inflows by Division
+                    {selectedDepartment !== "all" && (
+                      <span
+                        className="ml-2 text-sm font-normal"
+                        style={{ color: COLORS.textLight }}
+                      >
+                        ({selectedDepartment})
+                      </span>
+                    )}
                   </h3>
 
                   <div className="overflow-x-auto">
@@ -994,6 +1359,14 @@ const RevenueWalkPage = ({ onBack }) => {
                           >
                             Division
                           </th>
+                          {selectedDepartment === "all" && (
+                            <th
+                              className="text-left p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Department
+                            </th>
+                          )}
                           <th
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
@@ -1027,53 +1400,56 @@ const RevenueWalkPage = ({ onBack }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {revenueData.summaryData.inflowsByDivision?.map(
-                          (division, index) => (
-                            <tr
-                              key={index}
-                              className="border-b border-gray-100"
+                        {filteredInflowsByDivision.map((division, index) => (
+                          <tr key={index} className="border-b border-gray-100">
+                            <td
+                              className="p-4 font-medium"
+                              style={{ color: COLORS.text }}
                             >
+                              {division.division}
+                            </td>
+                            {selectedDepartment === "all" && (
                               <td
-                                className="p-4 font-medium"
-                                style={{ color: COLORS.text }}
+                                className="p-4"
+                                style={{ color: COLORS.textLight }}
                               >
-                                {division.division}
+                                {division.department}
                               </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(
-                                  division.total_2025_new_new_business
-                                )}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(division.mcs_mfs_2025)}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(division.organic_growth_2025)}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(division.sundry_revenue_growth)}
-                              </td>
-                              <td
-                                className="p-4 text-right font-bold"
-                                style={{ color: COLORS.success }}
-                              >
-                                {formatCurrency(division.total_inflows)}
-                              </td>
-                            </tr>
-                          )
-                        )}
+                            )}
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(
+                                division.total_2025_new_new_business
+                              )}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(division.mcs_mfs_2025)}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(division.organic_growth_2025)}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(division.sundry_revenue_growth)}
+                            </td>
+                            <td
+                              className="p-4 text-right font-bold"
+                              style={{ color: COLORS.success }}
+                            >
+                              {formatCurrency(division.total_inflows)}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -1086,6 +1462,14 @@ const RevenueWalkPage = ({ onBack }) => {
                     style={{ color: COLORS.error }}
                   >
                     <TrendingDown className="mr-2" /> Outflows by Division
+                    {selectedDepartment !== "all" && (
+                      <span
+                        className="ml-2 text-sm font-normal"
+                        style={{ color: COLORS.textLight }}
+                      >
+                        ({selectedDepartment})
+                      </span>
+                    )}
                   </h3>
 
                   <div className="overflow-x-auto">
@@ -1098,6 +1482,14 @@ const RevenueWalkPage = ({ onBack }) => {
                           >
                             Division
                           </th>
+                          {selectedDepartment === "all" && (
+                            <th
+                              className="text-left p-4 font-semibold"
+                              style={{ color: COLORS.text }}
+                            >
+                              Department
+                            </th>
+                          )}
                           <th
                             className="text-right p-4 font-semibold"
                             style={{ color: COLORS.text }}
@@ -1131,57 +1523,58 @@ const RevenueWalkPage = ({ onBack }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {revenueData.summaryData.outflowsByDivision?.map(
-                          (division, index) => (
-                            <tr
-                              key={index}
-                              className="border-b border-gray-100"
+                        {filteredOutflowsByDivision.map((division, index) => (
+                          <tr key={index} className="border-b border-gray-100">
+                            <td
+                              className="p-4 font-medium"
+                              style={{ color: COLORS.text }}
                             >
+                              {division.division}
+                            </td>
+                            {selectedDepartment === "all" && (
                               <td
-                                className="p-4 font-medium"
-                                style={{ color: COLORS.text }}
+                                className="p-4"
+                                style={{ color: COLORS.textLight }}
                               >
-                                {division.division}
+                                {division.department}
                               </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(
-                                  division.total_2025_lost_lost_business
-                                )}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(division.add_one_off_accounts)}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(
-                                  division.add_mcs_mfs_income_2024
-                                )}
-                              </td>
-                              <td
-                                className="p-4 text-right"
-                                style={{ color: COLORS.text }}
-                              >
-                                {formatCurrency(
-                                  division.add_2025_revenue_shrinkages
-                                )}
-                              </td>
-                              <td
-                                className="p-4 text-right font-bold"
-                                style={{ color: COLORS.error }}
-                              >
-                                {formatCurrency(division.total_outflows)}
-                              </td>
-                            </tr>
-                          )
-                        )}
+                            )}
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(
+                                division.total_2025_lost_lost_business
+                              )}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(division.add_one_off_accounts)}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(division.add_mcs_mfs_income_2024)}
+                            </td>
+                            <td
+                              className="p-4 text-right"
+                              style={{ color: COLORS.text }}
+                            >
+                              {formatCurrency(
+                                division.add_2025_revenue_shrinkages
+                              )}
+                            </td>
+                            <td
+                              className="p-4 text-right font-bold"
+                              style={{ color: COLORS.error }}
+                            >
+                              {formatCurrency(division.total_outflows)}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
