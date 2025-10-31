@@ -362,7 +362,7 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             {[
               "overview",
               "monthly",
-              "competitors",
+              "underwriters",
               "YOY comparison",
               "details",
             ].map((tab) => (
@@ -617,61 +617,80 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                 </div>
               </div>
 
-              {/* Underwriters and Segments */}
+              {/* Competitor Analysis and Segments */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Top Underwriters */}
+                {/* Competitor Analysis */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800 mb-4">
-                    Top Underwriters
-                  </h2>
-                  {data.underwriterPerformance &&
-                  data.underwriterPerformance.length > 0 ? (
-                    <div className="space-y-3">
-                      {data.underwriterPerformance.map((uw, index) => (
-                        <div
-                          key={uw.name}
-                          className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition"
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Competitor Analysis
+                    </h2>
+                    <Target className="text-gray-400" />
+                  </div>
+                  {data.competitorAnalysis &&
+                  data.competitorAnalysis.length > 0 ? (
+                    <div className="h-96">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={data.competitorAnalysis}
+                          layout="vertical"
+                          margin={{ left: 150, right: 20 }}
                         >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
-                                index === 0
-                                  ? "bg-yellow-500"
-                                  : index === 1
-                                    ? "bg-gray-400"
-                                    : index === 2
-                                      ? "bg-orange-600"
-                                      : "bg-gray-300"
-                              }`}
-                            >
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {uw.name || "Unknown"}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {uw.accountsWon} accounts
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-gray-900">
-                              {formatCurrency(uw.revenueGenerated)}
-                            </p>
-                            <p className="text-sm text-green-600">Revenue</p>
-                          </div>
-                        </div>
-                      ))}
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            opacity={0.2}
+                            horizontal={false}
+                          />
+                          <XAxis
+                            type="number"
+                            tick={{ fill: "#6b7280" }}
+                            tickFormatter={(value) => formatCurrency(value)}
+                          />
+                          <YAxis
+                            type="category"
+                            dataKey="competitor"
+                            tick={{ fill: "#6b7280" }}
+                            width={140}
+                          />
+                          <Tooltip
+                            formatter={(value, name) => {
+                              // name is the display name from the Bar component
+                              if (name === "Amount Won") {
+                                return [formatCurrency(value), "Amount Won"];
+                              } else {
+                                return [`${value} accounts`, "Accounts Won"];
+                              }
+                            }}
+                            contentStyle={{
+                              background: "rgba(255, 255, 255, 0.96)",
+                              border: "1px solid #e5e7eb",
+                              borderRadius: "0.5rem",
+                            }}
+                          />
+                          <Legend />
+                          <Bar
+                            dataKey="amountWon"
+                            name="Amount Won"
+                            fill="#dc2626"
+                            radius={[0, 4, 4, 0]}
+                          />
+                          <Bar
+                            dataKey="accountsWon"
+                            name="Accounts Won"
+                            fill="#f87171"
+                            radius={[0, 4, 4, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   ) : (
-                    <div className="h-40 flex items-center justify-center text-gray-500">
+                    <div className="h-96 flex items-center justify-center text-gray-500">
                       <div className="text-center">
-                        <Users
+                        <Target
                           size={48}
                           className="mx-auto mb-4 text-gray-300"
                         />
-                        <p>No underwriter data available</p>
+                        <p>No competitor data available</p>
                       </div>
                     </div>
                   )}
@@ -685,34 +704,41 @@ const WonAccountsPage = ({ onBack, userRole }) => {
                   {data.marketSegmentAnalysis &&
                   data.marketSegmentAnalysis.length > 0 ? (
                     <div className="space-y-4">
-                      {data.marketSegmentAnalysis.map((segment, index) => (
-                        <div key={segment.segment} className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="font-medium text-gray-700">
-                              {segment.segment}
-                            </span>
-                            <div className="text-right">
-                              <span className="text-gray-900 font-semibold">
-                                {segment.accountsWon} accounts
+                      {[...data.marketSegmentAnalysis]
+                        .sort(
+                          (a, b) =>
+                            (b.revenueGenerated || 0) -
+                            (a.revenueGenerated || 0)
+                        )
+                        .map((segment, index) => (
+                          <div key={segment.segment} className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="font-medium text-gray-700">
+                                {segment.segment}
                               </span>
-                              <span className="text-gray-600 text-xs ml-2">
-                                ({formatCurrency(segment.revenueGenerated || 0)}
-                                )
-                              </span>
+                              <div className="text-right">
+                                <span className="text-gray-900 font-semibold">
+                                  {formatCurrency(
+                                    segment.revenueGenerated || 0
+                                  )}
+                                </span>
+                                <span className="text-gray-600 text-xs ml-2">
+                                  ({segment.accountsWon} accounts)
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="h-2 rounded-full transition-all duration-500 ease-out"
+                                style={{
+                                  width: `${((segment.revenueGenerated || 0) / Math.max(...(data.marketSegmentAnalysis?.map((s) => s.revenueGenerated || 0) || [1]))) * 100}%`,
+                                  backgroundColor:
+                                    COLORS_BRAND[index % COLORS_BRAND.length],
+                                }}
+                              ></div>
                             </div>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full transition-all duration-500 ease-out"
-                              style={{
-                                width: `${(segment.accountsWon / Math.max(...(data.marketSegmentAnalysis?.map((s) => s.accountsWon) || [1]))) * 100}%`,
-                                backgroundColor:
-                                  COLORS_BRAND[index % COLORS_BRAND.length],
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   ) : (
                     <div className="h-40 flex items-center justify-center text-gray-500">
@@ -1017,79 +1043,57 @@ const WonAccountsPage = ({ onBack, userRole }) => {
             </div>
           )}
 
-          {activeTab === "competitors" && (
+          {activeTab === "underwriters" && (
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-bold text-gray-800">
-                    Competitor Analysis
-                  </h2>
-                  <Target className="text-gray-400" />
-                </div>
-                {data.competitorAnalysis &&
-                data.competitorAnalysis.length > 0 ? (
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={data.competitorAnalysis}
-                        layout="vertical"
-                        margin={{ left: 150, right: 20 }}
+                <h2 className="text-xl font-bold text-gray-800 mb-4">
+                  Top Underwriters
+                </h2>
+                {data.underwriterPerformance &&
+                data.underwriterPerformance.length > 0 ? (
+                  <div className="space-y-3">
+                    {data.underwriterPerformance.map((uw, index) => (
+                      <div
+                        key={uw.name}
+                        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition"
                       >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          opacity={0.2}
-                          horizontal={false}
-                        />
-                        <XAxis
-                          type="number"
-                          tick={{ fill: "#6b7280" }}
-                          tickFormatter={(value) => formatCurrency(value)}
-                        />
-                        <YAxis
-                          type="category"
-                          dataKey="competitor"
-                          tick={{ fill: "#6b7280" }}
-                          width={140}
-                        />
-                        <Tooltip
-                          formatter={(value, name) => {
-                            // name is the display name from the Bar component
-                            if (name === "Amount Won") {
-                              return [formatCurrency(value), "Amount Won"];
-                            } else {
-                              return [`${value} accounts`, "Accounts Won"];
-                            }
-                          }}
-                          contentStyle={{
-                            background: "rgba(255, 255, 255, 0.96)",
-                            border: "1px solid #e5e7eb",
-                            borderRadius: "0.5rem",
-                          }}
-                        />
-                        <Legend />
-                        <Bar
-                          dataKey="amountWon"
-                          name="Amount Won"
-                          fill="#dc2626"
-                          radius={[0, 4, 4, 0]}
-                        />
-                        <Bar
-                          dataKey="accountsWon"
-                          name="Accounts Won"
-                          fill="#f87171"
-                          radius={[0, 4, 4, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                              index === 0
+                                ? "bg-yellow-500"
+                                : index === 1
+                                  ? "bg-gray-400"
+                                  : index === 2
+                                    ? "bg-orange-600"
+                                    : "bg-gray-300"
+                            }`}
+                          >
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {uw.name || "Unknown"}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {uw.accountsWon} accounts
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-900">
+                            {formatCurrency(uw.revenueGenerated)}
+                          </p>
+                          <p className="text-sm text-green-600">Revenue</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
-                  <div className="h-96 flex items-center justify-center text-gray-500">
+                  <div className="h-40 flex items-center justify-center text-gray-500">
                     <div className="text-center">
-                      <Target
-                        size={48}
-                        className="mx-auto mb-4 text-gray-300"
-                      />
-                      <p>No competitor data available</p>
+                      <Users size={48} className="mx-auto mb-4 text-gray-300" />
+                      <p>No underwriter data available</p>
                     </div>
                   </div>
                 )}
